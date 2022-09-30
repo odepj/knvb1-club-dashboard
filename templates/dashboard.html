@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="dashboardcontainer">
+    <nav class="menu" tabindex="0">
+        <header class="avatar">
+            <div class="accountoverview">
+                <img src="/static/images/profilepic.svg" />
+                <span>{{ session.displayname }}</span>
+            </div>
+            <br>
+        </header>
+        <div class="loguit">
+            <a href="/logout"><span>Uitloggen</span></a>
+        </div>
+    </nav>
+    
+    <div class="dashboard" style="width: 100%">
+        <div class="flexcontainer">
+            <h1 class="statistieken animate__animated animate__fadeInDown">Kies een categorie</h1>
+            <div class="statistiekcontainer">
+                <div class="row animate__animated animate__fadeInUp">
+                    <div class="statistiek verspringen">
+                        <a href="/dashboard/verspringen"><span>Verspringen</span></a>
+                    </div>
+                    <div class="statistiek sprint">
+                        <a href="/dashboard/sprint"><span>Sprint</span></a>
+                    </div>
+                    <div class="statistiek zijwaartsspringen">
+                        <a href="/dashboard/zijwaartsspringen"><span>Zijwaarts <br>Springen</span></a>
+                    </div>
+                    <div class="statistiek handoogcoord">
+                        <a href="/dashboard/handoogcoordinatie"><span>Hand-oog <br>coordinatie</span></a>
+                    </div>
+                    <div class="statistiek evenwichtsbalk">
+                        <a href="/dashboard/evenwichtsbalk"><span>Evenwichtsbalk</span></a>
+                    </div>
+                    <div class="statistiek zijwaartsverplaatsen">
+                        <a href="/dashboard/zijwaartsverplaatsen"><span>Zijwaarts <br>Verplaatsen</span></a>
+                    </div>
+                    <div class="statistiek cod">
+                        <a href="/dashboard/cod"><span>CoD</span></a>
+                    </div>
+                    <div class="statistiek gecombineerd">
+                        <a href="/dashboard/gecombineerd"><span>Gecombineerd</span></a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    const selectElement = document.querySelector('#voetbalklasse');
+    selectElement.addEventListener('change', (event) => {
+        const result = document.querySelector('#team1');
+        const result2 = document.querySelector('#team2');
+        const result3 = document.querySelector('#team3');
+        result.textContent = `${event.target.value}`;
+        result2.textContent = `${event.target.value}`;
+        result3.textContent = `${event.target.value}`;
+});
+</script>
+{% endblock %}
