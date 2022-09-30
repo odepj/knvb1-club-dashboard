@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="home">
+    <div class="flexcontainer">
+        <div class="knvblogo animate__animated animate__fadeInDown">
+            <img src="/static/images/knvblogo.svg" alt="knvblogo"/>
+        </div>
+        <div class="titletext">
+            <h1 class="animate__animated animate__fadeInDown">KNVB Dashboard</h1>
+        </div>
+        <div class="descriptiontext">
+            <p>Deze website is alleen bevoegd voor BVO's om inzicht te krijgen over de prestaties van hun spelers. Heeft u al een account ontvangen? Ga dan verder en Log in met uw gegevens. Neem contact op met uw leidinggevende als u niet kunt inloggen.</p>
+        </div>
+        <div class="loginbutton">
+            <a href="/login">
+                <span>Inloggen</span>
+            </button>
+        </div>
+    </div>
+</div>
+{% endblock %}
