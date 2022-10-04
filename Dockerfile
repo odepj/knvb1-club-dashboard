@@ -12,8 +12,8 @@ RUN pip install flask
 
 RUN pip install -r requirements.txt
 
-RUN export FLASK_APP=app.py
+RUN export FLASK_APP=wsgi.py
 
 EXPOSE 5000
 
-CMD ["flask", "run", "--host", "0.0.0.0"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"]
