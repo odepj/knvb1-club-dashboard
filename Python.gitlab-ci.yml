@@ -1,0 +1,21 @@
+variables:
+  gitlab_url: gitlab.fdmci.hva.nl
+  port: 5050
+  repository: knvb-2
+  project: knvb-team-2
+
+stages:
+  - "build_image"
+
+build_image:
+  stage: build_image
+  image: docker:20.10.17
+  services:
+    - docker:20.10.17-dind
+  only:
+    refs:
+      - staging
+  script:
+    - "docker login $(gitlab_url):$(port)"
+    - "docker build -t $(gitlab_url):$(port)/$(repository)/$(project) ."
+    - "docker push $(gitlab_url):$(port)/$(repository)/$(project)"
