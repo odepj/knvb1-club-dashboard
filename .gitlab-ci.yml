@@ -12,9 +12,12 @@ build_image:
   image: docker:20.10.17
   services:
     - docker:20.10.17-dind
+  tags:
+    - hva
   only:
     refs:
       - staging
+
   script:
     - "docker login $(gitlab_url):$(port)"
     - "docker build -t $(gitlab_url):$(port)/$(repository)/$(project) ."
