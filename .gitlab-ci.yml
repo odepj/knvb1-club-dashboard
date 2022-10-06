@@ -1,9 +1,3 @@
-variables:
-  gitlab_url: gitlab.fdmci.hva.nl
-  port: 5050
-  repository: knvb-2
-  project: knvb-team-2
-
 stages:
   - "build_image"
 
@@ -19,6 +13,6 @@ build_image:
       - staging
 
   script:
-    - "docker login $(gitlab_url):$(port)"
-    - "docker build -t $(gitlab_url):$(port)/$(repository)/$(project) ."
-    - "docker push $(gitlab_url):$(port)/$(repository)/$(project)"
+    - docker login -u $CI_REGISTRY_USER $CI_REGISTRY --password-stdin
+    - docker build -t $CI_REGISTRY_IMAGE .
+    - docker push $CI_REGISTRY_IMAGE
