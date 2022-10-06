@@ -1,5 +1,5 @@
 variables:
-  IMAGE_NAME: "knvb-team-2-app"
+  IMAGE_NAME: "knvb-images"
 
 stages:
   - "build_image"
