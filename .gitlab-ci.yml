@@ -14,6 +14,7 @@ build_image:
   only:
     refs:
       - staging
+      - main
 
   script:
     # login into the GitLab Container Registry
