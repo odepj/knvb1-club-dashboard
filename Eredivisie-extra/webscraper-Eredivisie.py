@@ -101,16 +101,15 @@ for jaar in jaren:
 # wedstrijd_df datafram word samengevoegd met alle_wedstrijden
 team_url.split("/")[-1].replace("-Stats","").replace("-"," ")
 wedstrijd_df = pd.concat(alle_wedstrijden)
+
 # Tekst word naar lowercase(kleine letters) veranderd
 wedstrijd_df.columns = [c.lower() for c in wedstrijd_df.columns]
-
-# Het wedstrijd dataframe word als csv opgeslagen
-#wedstrijd_df.to_csv("wedstrijden.csv")
 
 # De eeste 5 regels van het wedstrijd dataframe word geprint
 print(wedstrijd_df.head())
 
-# Plotten van een line balk grafiek
-fig = px.bar(wedstrijd_df, x="date", y="attendance")
-# Start de plot server op en toont deze in je browser
-fig.show()
+# Gebruikte dataframes worden als csv opgeslagen
+wedstrijd_df.to_csv("wedstrijden.csv", encoding='utf-8', index=False)
+statistieken_df[0].to_csv("statistieken.csv", encoding='utf-8', index=False)
+shoten.to_csv("shoten.csv", encoding='utf-8', index=False)
+team_data.to_csv("team-data.csv", encoding='utf-8', index=False)
