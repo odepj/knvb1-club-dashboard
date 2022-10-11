@@ -1,8 +1,4 @@
-import os
-import MySQLdb
 from flask import Flask, render_template, redirect, url_for, request, session
-from flask_sqlalchemy import SQLAlchemy
-from flask_mysqldb import MySQL
 import json
 import plotly
 import plotly.express as px
@@ -11,23 +7,15 @@ import plotly.graph_objects as go
 import pandas as pd
 from sqlalchemy import create_engine, text
 
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}"
-app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-db = SQLAlchemy(app)
+
+connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
+connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format('tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
+engine = create_engine(connect_string, connect_args=connect_args)
 
 team_naam = '"Onder 13"'
-
 app.secret_key = 'databaseproject'
-
-app.config['MYSQL_HOST'] = os.getenv('MYSQL_HOST')
-app.config['MYSQL_USER'] = os.getenv('MYSQL_USER')
-app.config['MYSQL_PASSWORD'] = os.getenv('MYSQL_PASSWORD')
-app.config['MYSQL_DB'] = os.getenv('MYSQL_DB')
-
-# Intialize MySQL
-mysql = MySQL(app)
-
 
 @app.route('/')
 def intro():
@@ -43,17 +31,17 @@ def login():
     if request.method == 'POST' and 'username' in request.form and 'password' in request.form:
         username = request.form['username']
         password = request.form['password']
-        cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
-        cursor.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,))
-        account = cursor.fetchone()
-        if account:
-            session['loggedin'] = True
-            session['id'] = account['id']
-            session['username'] = account['username']
-            session['displayname'] = account['displayname']
-            return render_template('dashboard.html')
-        else:
-            errorMessage = 'Uw gebruikersnaam of wachtwoord is fout.'
+
+        with engine.begin() as conn:     
+            account = conn.execute('SELECT * FROM accounts WHERE username = %s AND password = %s', (username, password,)).fetchone()
+            if account:
+                session['loggedin'] = True
+                session['id'] = account['id']
+                session['username'] = account['username']
+                session['displayname'] = account['displayname']
+                return render_template('dashboard.html')
+            else:
+                errorMessage = 'Uw gebruikersnaam of wachtwoord is fout.'
     return render_template('login.html', errorMessage=errorMessage)
 
 
@@ -79,7 +67,7 @@ def dashboard():
 def visu_vertesprong():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(
@@ -125,7 +113,7 @@ def visu_vertesprong():
 def visu_sprint():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(
@@ -197,7 +185,7 @@ def visu_sprint():
 def visu_sprong_zij():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(text('SELECT `id`, `Zijwaarts_springen_1`, `Zijwaarts_springen_2`,'
@@ -246,7 +234,7 @@ def visu_sprong_zij():
 def visu_handoogc():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(text('SELECT `id`, `Oog_hand_coordinatie_1`, `Oog_hand_coordinatie_2`,'
@@ -292,7 +280,7 @@ def visu_handoogc():
 def visu_balance_beam():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(text('SELECT `id`, `Balance_Beam_6cm`, `Balance_Beam_4_5cm`, `Balance_Beam_3cm`,'
@@ -338,7 +326,7 @@ def visu_balance_beam():
 def visu_zijwaarts_verplaats():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(
@@ -386,7 +374,7 @@ def visu_zijwaarts_verplaats():
 def visu_CoD():
     bvo_id = session.get('id')
     teamSelectie = request.values.get('teamSelectie')
-    engine = create_engine('mysql+mysqlconnector://husovic:YYuuZR6E8cj21K83@sql106.your-server.de/dev_bdproject')
+
     if teamSelectie:
         with engine.begin() as conn:
             result = conn.execute(text('SELECT `id`, `Staande_lengte`, `CoD_links_1`, `CoD_links_2`, `CoD_links_beste`,'
