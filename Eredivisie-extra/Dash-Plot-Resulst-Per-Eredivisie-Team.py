@@ -5,7 +5,7 @@ import pandas as pd
 import plotly.express as px
 
 # Load the dataset
-df = pd.read_csv("wedstrijden.csv")
+df = pd.read_csv("matches.csv")
 
 # Create the Dash app
 app = Dash()
