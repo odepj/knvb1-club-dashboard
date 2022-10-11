@@ -1,20 +1,20 @@
--- Create a new table called 'bvo' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.bvo
+-- Create a new table called 'bvo' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.bvo
 (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `bvo_naam`NVARCHAR(50) NOT NULL UNIQUE,
     `bvo_jeugdopleiding` NVARCHAR(50)
 );
 
--- Create a new table called 'team' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.team
+-- Create a new table called 'team' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.team
 (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `team_naam` NVARCHAR(25) NOT NULL UNIQUE
 );
 
--- Create a new table called 'reeks' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.reeks
+-- Create a new table called 'reeks' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.reeks
 (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `seizoen` NVARCHAR(10) NOT NULL,
@@ -23,8 +23,8 @@ CREATE TABLE IF NOT EXISTS zmontenj.reeks
     UNIQUE INDEX ix_reeks_naam_jaar (reeks_naam, jaar)
 );
 
--- Create a new table called 'speler' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.speler
+-- Create a new table called 'speler' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.speler
 (
     `id` NVARCHAR(7) NOT NULL PRIMARY KEY,
     `geboortedatum` DATE,
@@ -32,8 +32,8 @@ CREATE TABLE IF NOT EXISTS zmontenj.speler
     `toestemming` BIT NOT NULL
 );
 
--- Create a new table called 'allocatie' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.allocatie
+-- Create a new table called 'allocatie' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.allocatie
 (
     `id` INT NOT NULL PRIMARY KEY AUTO_INCREMENT,
     `bvo_id` INT NOT NULL,
@@ -49,8 +49,8 @@ CREATE TABLE IF NOT EXISTS zmontenj.allocatie
 
 );
 
--- Create a new table called 'han' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.han
+-- Create a new table called 'han' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.han
 (
     `allocatie_id` INT NOT NULL PRIMARY KEY,
 	`Testdatum` DATE,
@@ -93,8 +93,8 @@ CREATE TABLE IF NOT EXISTS zmontenj.han
 	FOREIGN KEY (allocatie_id) REFERENCES allocatie(id)
 );
 
--- Create a new table called 's2g' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.s2g
+-- Create a new table called 's2g' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.s2g
 (
     `allocatie_id` INT NOT NULL PRIMARY KEY,
 	`Invuldatum` DATE,
@@ -282,8 +282,8 @@ CREATE TABLE IF NOT EXISTS zmontenj.s2g
 	FOREIGN KEY (allocatie_id) REFERENCES allocatie(id)
 );
 
--- Create a new table called 'bf' in schema 'zmontenj'
-CREATE TABLE IF NOT EXISTS zmontenj.bf
+-- Create a new table called 'bf' in schema 'ztiggele'
+CREATE TABLE IF NOT EXISTS ztiggele.bf
 (
     `allocatie_id` INT NOT NULL PRIMARY KEY,
     `position-label` NVARCHAR(40),

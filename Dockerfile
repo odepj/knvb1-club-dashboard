@@ -2,17 +2,18 @@ FROM python:3.10
 
 RUN pip install --upgrade pip
 
-COPY ./requirements.txt /app/requirements.txt
+ENV SRC_DIR /app
 
-WORKDIR /app
+WORKDIR ${SRC_DIR}
+
+COPY .  ${SRC_DIR}
+
+RUN pip install flask
 
 RUN pip install -r requirements.txt
 
-COPY . /app
+RUN export FLASK_APP=wsgi.py
 
-#ENTRYPOINT [ "python" ]
+EXPOSE 5000
 
-#CMD [ "app.py" ]
-
-#CMD [ "gunicorn", "app:app", "--host", "0.0.0.0", "--post", "8080"]
-CMD ["gunicorn", "app:app", "-w", "2", "-b", "0.0.0.0:8080"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "wsgi:app"]
