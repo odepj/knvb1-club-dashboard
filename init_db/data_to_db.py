@@ -4,8 +4,10 @@ import pandas as pd
 import os
 
 try:
-    engine = create_engine(f"mysql+mysqlconnector://{os.getenv('MYSQL_USER')}:{os.getenv('MYSQL_PASSWORD')}@{os.getenv('MYSQL_HOST')}/{os.getenv('MYSQL_DB')}")
-    cnx = engine.connect()
+    connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
+    connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format('tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
+    engine = create_engine(connect_string, connect_args=connect_args)
+
 
 except Error as e:
     print("Error while connecting to MySQL", e)
@@ -17,5 +19,4 @@ han_data = pd.read_csv('HAN_csv_example.csv', index_col=0, delimiter=',')
 han_data.to_sql("han", con=engine, if_exists='replace', index=False)
 print("Data written")
 
-cnx.close()
 print("Conneciton closed")
