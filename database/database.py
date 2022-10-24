@@ -1,22 +1,26 @@
-from sqlalchemy import create_engine
+from sqlalchemy import select
 from sqlalchemy.engine.cursor import CursorResult
+from sqlalchemy.orm import Query
+
+from database import session_factory
+from database.models import Account
 
 
-connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
-connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format(
-    'tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
-
-engine = create_engine(connect_string, connect_args=connect_args)
+# from init_db.data_to_db import engine
 
 
 def execute_query(query: str) -> CursorResult:
-    return engine.execute(query)
+    return session_factory().execute(query)
 
 
 # request account by username and password
 def request_account(username: str, password: str):
-    query = f"SELECT * FROM `accounts` WHERE `username` = '{username}' AND `password` = '{password}'"
-    return execute_query(query).fetchone()
+    session = session_factory()
+    # query = f"SELECT * FROM `accounts` WHERE `username` = '{username}' AND `password` = '{password}'"
+    stmt = select(Account.id, Account.username, Account.display_name).where(Account.username == username, Account.password == password)
+    result = session.execute(stmt).fetchone()
+    print(result)
+    return result
 
 
 # request vertesprong by team_name and bvo_id
