@@ -1,22 +1,18 @@
-from sqlalchemy import create_engine
-from mysql.connector import Error
 import pandas as pd
-import os
 
-try:
-    connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
-    connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format('tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
-    engine = create_engine(connect_string, connect_args=connect_args)
+from database import session_factory
+from database.models import Account, Han
 
+session = session_factory()
 
-except Error as e:
-    print("Error while connecting to MySQL", e)
+# Loading csv file
+han_data = pd.read_csv('csv/adjusted_date_knvb_data.csv', index_col=0, delimiter=',')
+accounts = pd.read_csv('csv/standard_accounts.csv')
 
-#Loading csv file
-han_data = pd.read_csv('HAN_csv_example.csv', index_col=0, delimiter=',')
+han_entities = Han.instantiate_from_dataframe(han_data)
+account_entities = Account.instantiate_from_dataframe(accounts)
 
-#Writing data to MySQL
-han_data.to_sql("han", con=engine, if_exists='replace', index=False)
-print("Data written")
-
-print("Conneciton closed")
+# Persisting data to DB
+session.add_all(han_entities + account_entities)
+session.commit()
+print(f"Data written to database")
