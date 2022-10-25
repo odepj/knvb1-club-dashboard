@@ -1,5 +1,4 @@
-from typing import Any
-
+import pandas as pd
 from sqlalchemy import Column, Integer, String, Boolean, Float, Date
 
 from database import Base
@@ -15,7 +14,7 @@ class Account(Base):
     display_name = Column(String(255))
     is_admin = Column(Boolean(False))
 
-    def __init__(self, id, username, password, email, display_name, is_admin, *args: Any, **kwargs: Any):
+    def __init__(self, id, username, password, email, display_name, is_admin, *args, **kwargs):
         self.id = id
         self.username = username
         self.password = password
@@ -23,6 +22,10 @@ class Account(Base):
         self.display_name = display_name
         self.is_admin = is_admin
         super().__init__(*args, **kwargs)
+
+    @classmethod
+    def instantiate_from_dataframe(cls, df: pd.DataFrame) -> list:
+        return list(map(lambda x: cls(*x), df.values.tolist()))
 
 
 class Han(Base):
@@ -73,52 +76,16 @@ class Han(Base):
     datum = Column(Date())
     geboortedatum = Column(Date())
 
-    def __int__(self,
-                id,
-                speler_code,
-                team_naam,
-                meting,
-                Staande_lengte,
-                Zittende_lengte,
-                Beenlengte,
-                Zithoogte,
-                Gewicht,
-                Maturity_Offset,
-                Balance_Beam_6cm,
-                Balance_Beam_4_5cm,
-                Balance_Beam_3cm,
-                Balance_beam_totaal,
-                Zijwaarts_springen_1,
-                Zijwaarts_springen_2,
-                Zijwaarts_springen_totaal,
-                Zijwaarts_verplaatsen_1,
-                Zijwaarts_verplaatsen_2,
-                Zijwaarts_verplaatsen_totaal,
-                Oog_hand_coordinatie_1,
-                Oog_hand_coordinatie_2,
-                Oog_hand_coordinatie_Totaal,
-                X10_meter_sprint_1,
-                X10_meter_sprint_2,
-                X10_meter_sprint_beste,
-                X20_meter_sprint_1,
-                X20_meter_sprint_2,
-                X20_meter_sprint_beste,
-                X30_meter_sprint_1,
-                X30_meter_sprint_2,
-                X30_meter_sprint_beste,
-                CoD_links_1,
-                CoD_links_2,
-                CoD_links_beste,
-                CoD_rechts_1,
-                CoD_rechts_2,
-                CoD_rechts_beste,
-                Vertesprong_1,
-                Vertesprong_2,
-                Vertesprong_beste,
-                club_code,
-                datum,
-                geboortedatum):
-        self.id = id
+    def __init__(self, speler_code, team_naam, meting, Staande_lengte, Zittende_lengte, Beenlengte, Zithoogte,
+                 Gewicht, Maturity_Offset, Balance_Beam_6cm, Balance_Beam_4_5cm, Balance_Beam_3cm, Balance_beam_totaal,
+                 Zijwaarts_springen_1, Zijwaarts_springen_2, Zijwaarts_springen_totaal, Zijwaarts_verplaatsen_1,
+                 Zijwaarts_verplaatsen_2, Zijwaarts_verplaatsen_totaal, Oog_hand_coordinatie_1, Oog_hand_coordinatie_2,
+                 Oog_hand_coordinatie_Totaal, X10_meter_sprint_1, X10_meter_sprint_2, X10_meter_sprint_beste,
+                 X20_meter_sprint_1, X20_meter_sprint_2, X20_meter_sprint_beste, X30_meter_sprint_1, X30_meter_sprint_2,
+                 X30_meter_sprint_beste, CoD_links_1, CoD_links_2, CoD_links_beste, CoD_rechts_1, CoD_rechts_2,
+                 CoD_rechts_beste, Vertesprong_1, Vertesprong_2, Vertesprong_beste, club_code, datum, geboortedatum,
+                 *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.speler_code = speler_code
         self.team_naam = team_naam
         self.meting = meting
@@ -162,3 +129,7 @@ class Han(Base):
         self.club_code = club_code
         self.datum = datum
         self.geboortedatum = geboortedatum
+
+    @classmethod
+    def instantiate_from_dataframe(cls, df: pd.DataFrame) -> list:
+        return list(map(lambda x: cls(*x), df.values.tolist()))

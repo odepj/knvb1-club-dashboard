@@ -22,7 +22,7 @@ def handle_login():
             session['loggedin'] = True
             session['id'] = account['id']
             session['username'] = account['username']
-            session['displayname'] = account['displayname']
+            session['displayname'] = account['display_name']
             return render_template('dashboard.html')
 
         else:

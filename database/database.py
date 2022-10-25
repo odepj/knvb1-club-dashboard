@@ -1,26 +1,20 @@
 from sqlalchemy import select
 from sqlalchemy.engine.cursor import CursorResult
-from sqlalchemy.orm import Query
 
-from database import session_factory
+from database import session_factory, engine
 from database.models import Account
 
-
-# from init_db.data_to_db import engine
-
-
 def execute_query(query: str) -> CursorResult:
-    return session_factory().execute(query)
+    return engine.execute(query)
 
 
 # request account by username and password
 def request_account(username: str, password: str):
     session = session_factory()
-    # query = f"SELECT * FROM `accounts` WHERE `username` = '{username}' AND `password` = '{password}'"
-    stmt = select(Account.id, Account.username, Account.display_name).where(Account.username == username, Account.password == password)
-    result = session.execute(stmt).fetchone()
-    print(result)
-    return result
+    return session.execute(
+        select(Account.id, Account.username, Account.display_name)
+        .where(Account.username == username, Account.password == password)
+    ).fetchone()
 
 
 # request vertesprong by team_name and bvo_id
