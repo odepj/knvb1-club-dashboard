@@ -32,23 +32,9 @@ def vertesprong(data):
         data, column_names, x, y, color, hover_data, labels)
 
 
-def zijwaarts_springen(data):
-    column_names = {0: 'id', 1: 'Zijwaarts_springen_1', 2: 'Zijwaarts_springen_2',
-                    3: 'Zijwaarts_springen_totaal', 4: 'Staande_lengte'}
-    x = 'Staande_lengte'
-    y = 'Zijwaarts_springen_totaal'
-    color = 'Zijwaarts_springen_totaal'
-    hover_data = ['Zijwaarts_springen_1', 'Zijwaarts_springen_2', 'id']
-    labels = {"Staande_lengte": "Staande lengtes in centimeters",
-              "Zijwaarts_springen_totaal": "Zijwaarts springen in meters"}
-
-    return create_default_scatterplot(
-        data, column_names, x, y, color, hover_data, labels)
-
-
 def hand_oog_coordinatie(data):
     column_names = {0: 'id', 1: 'Oog_hand_coordinatie_1', 2: 'Oog_hand_coordinatie_2',
-                       3: 'Oog_hand_coordinatie_Totaal', 4: 'Lengte_bovenlichaam'}
+                    3: 'Oog_hand_coordinatie_Totaal', 4: 'Lengte_bovenlichaam'}
     x = 'Lengte_bovenlichaam'
     y = 'Oog_hand_coordinatie_Totaal'
     color = 'Oog_hand_coordinatie_Totaal'
@@ -65,7 +51,8 @@ def hand_oog_coordinatie(data):
 
 def evenwichtsbalk(data):
     column_names = {0: 'id', 1: 'Balance_Beam_6cm', 2: 'Balance_Beam_4_5cm',
-                       3: 'Balance_Beam_3cm', 4: 'Balance_beam_totaal', 5: 'Staande_lengte'}
+                    3: 'Balance_Beam_3cm', 4: 'Balance_beam_totaal', 5: 'Staande_lengte'}
+
     x = 'Staande_lengte'
     y = 'Balance_beam_totaal'
     color = 'Balance_beam_totaal'
@@ -81,17 +68,30 @@ def evenwichtsbalk(data):
 
 
 def zijwaarts_verplaatsen(data):
-    column_names = {0: 'id', 1: 'Staande_lengte', 2: 'Zijwaarts_verplaatsen_1',
-                    3: 'Zijwaarts_verplaatsen_2', 4: 'Zijwaarts_verplaatsen_totaal'}
-    x = 'Staande_lengte',
-    y = 'Zijwaarts_verplaatsen_totaal',
-    color = 'Zijwaarts_verplaatsen_totaal',
-    hover_data = ['Zijwaarts_verplaatsen_1',
-                  'Zijwaarts_verplaatsen_2', 'id'],
+    column_names = {0: 'id', 1: 'Zijwaarts_verplaatsen_1', 2: 'Zijwaarts_verplaatsen_2',
+                    3: 'Zijwaarts_verplaatsen_totaal', 4: 'Staande_lengte'}
+    x = 'Staande_lengte'
+    y = 'Zijwaarts_verplaatsen_totaal'
+    color = 'Zijwaarts_verplaatsen_totaal'
+    hover_data = ['Zijwaarts_verplaatsen_1', 'Zijwaarts_verplaatsen_2', 'id']
     labels = {
         "Staande_lengte": "Staande lengtes in centimeters",
         "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen Totaal"
     }
+    return create_default_scatterplot(
+        data, column_names, x, y, color, hover_data, labels)
+
+
+def zijwaarts_springen(data):
+    column_names = {0: 'id', 1: 'Zijwaarts_springen_1', 2: 'Zijwaarts_springen_2',
+                    3: 'Zijwaarts_springen_totaal', 4: 'Staande_lengte'}
+    x = 'Staande_lengte'
+    y = 'Zijwaarts_springen_totaal'
+    color = 'Zijwaarts_springen_totaal'
+    hover_data = ['Zijwaarts_springen_1', 'Zijwaarts_springen_2', 'id']
+    labels = {"Staande_lengte": "Staande lengtes in centimeters",
+              "Zijwaarts_springen_totaal": "Zijwaarts springen in meters"}
+
     return create_default_scatterplot(
         data, column_names, x, y, color, hover_data, labels)
 

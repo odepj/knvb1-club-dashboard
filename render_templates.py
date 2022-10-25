@@ -43,22 +43,6 @@ def sprinten():
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
 
-def zijwaarts_springen():
-    bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
-
-    if (bvo_id == None):
-        return redirect('/login')
-
-    result = database.request_zijwaarts_springen(team_selection, bvo_id)
-    graphJSON = scatterplot.zijwaarts_springen(result)
-    header = "Zijwaartse sprong"
-    description = f"Resultaten van de zijwaarste sprong voor de groep {team_selection} jaar. "
-    template_location = 'zijwaartsspringen.html'
-
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
-
-
 def hand_oog_coordinatie():
     bvo_id = get_bvo_id()
     team_selection = get_team_selection()
@@ -103,6 +87,22 @@ def zijwaarts_verplaatsen():
     header = "Zijwaarts Verplaatsen"
     description = f"Resultaten van het zijwaarts verplaatsen voor de groep {team_selection} jaar. "
     template_location = 'dashboard/zijwaartsverplaatsen.html'
+
+    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+
+
+def zijwaarts_springen():
+    bvo_id = get_bvo_id()
+    team_selection = get_team_selection()
+
+    if (bvo_id == None):
+        return redirect('/login')
+
+    result = database.request_zijwaarts_springen(team_selection, bvo_id)
+    graphJSON = scatterplot.zijwaarts_springen(result)
+    header = "Zijwaartse sprong"
+    description = f"Resultaten van de zijwaarste sprong voor de groep {team_selection} jaar. "
+    template_location = 'dashboard/zijwaartsspringen.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
