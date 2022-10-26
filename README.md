@@ -1,91 +1,59 @@
-# KNVB-team-2
+# **HVA Big data project: KNVB 2**
 
-111111111443vsdf
-## Getting started
+This project was Issued by the KNVB through Sport Data Valley. It is a website which lets professional football organizations see the insightful statistics about their players regarding anthropometric and physical results in the form of a dashboard. KNVB currently only issues out paper reports to their organizations. This dashboard helps bring the data to an online enviroment.
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
+## **Project Architecture**
+This project was made with Python through the FLASK framework. To learn more about FLASK, please visit: https://flask.palletsprojects.com
+<br>The data is hosted in a relational database using mySQL.
 
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
+## **Prerequisites**
+- Python (tested with 3.8.x or higher).
+- A host with mySQL- and WSGI-support where you can store the data.
 
-## Add your files
+## **Installing**
 
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/ee/gitlab-basics/add-file.html#add-a-file-using-the-command-line) or push an existing Git repository with the following command:
+1. Clone the project to your personal repository and write out commands from the root of the project.
+2. Ensure you have pip installed with this command: _<code>pip3 install pip --upgrade --user</code>_
+3. Install the necessary packages with this command: _<code>pip3 install -r requirements.txt</code>_
+4. app.py requires config changes. Change the credentials to your own host.
+5. dev_bdproject.sql is an export of our database through phpmyadmin. Import the sql file in your own database interface.
+6. Run app.py and check the terminal on which adress the the program is running on.
+7. Test accounts have been made named sdz/sdz and tos/tos to gain access to the dashboard and show that different data is used for different organizations.
 
-```
-cd existing_repo
-git remote add origin https://gitlab.fdmci.hva.nl/knvb-2/knvb-team-2.git
-git branch -M main
-git push -uf origin main
-```
+## **Docker**
+This application's process is being streamlined with the help of Docker. You can visit https://docs.docker.com/get-started/ to learn more about Docker and it's implications.
+- You can use Docker in this project to run the application locally on you own environment.
+- Docker is also used in a DevOps CI/CD pipeline to automatically build and deploy new images to GitLab when pushing changes to the staging or main branch.
 
-## Integrate with your tools
+### **Use Docker locally**
+When using Docker, there are multiple ways to run the application locally. Below are the three most common ways to do it.
 
-- [ ] [Set up project integrations](https://gitlab.fdmci.hva.nl/knvb-2/knvb-team-2/-/settings/integrations)
+#### **1. Using Docker Compose**
+Docker Compose has been added to this project for ease of use. 
+1. You can build and run this application locally by entering: <code>*docker-compose up*</code> into the terminal. 
+2. Docker Compose will handle the whole process and all there's left to do is to visit: http://localhost:5000/
 
-## Collaborate with your team
+#### **2. Using the VS Code Docker extension**
+VS Code has a great Docker extension that you can use to run this application locally.
+1. First download the Docker extension in VS Code by searching for the extension: ms-azuretools.vscode-docker
+2. Right click on the Dockerfile in this project and click on the option: *Build Image*
+3. After the image has been built, go the Docker extension in the left taskbar and run the preferred image by right clicking the option: *run*
+4. The only step left now is to visit: http://localhost:5000/
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Automatically merge when pipeline succeeds](https://docs.gitlab.com/ee/user/project/merge_requests/merge_when_pipeline_succeeds.html)
+#### **3. Using the terminal**
+If the first two options are not applicable to you, then we can always use the terminal.
+1. First build and tag the image by entering: <code>*docker build -t knvb-team-2 .*</code> into the terminal.
+2. Run the built image on port 5000 by entering: <code>*docker run -p 5000:5000 knvb-team-2*</code> into the terminal.
+3. The only step left now is to visit: http://localhost:5000/
 
-## Test and Deploy
+### **Docker with CI/CD pipeline**
+This project contains a CI/CD pipeline that automatically builds Docker images and adds them to the Docker Container Registry when pushing changes to the staging or main branch.
+With the Docker Container Registry integrated into GitLab, every GitLab project can have its own space to store its Docker images. You can visit this URL to learn more about the Container Registry: https://docs.gitlab.com/ee/user/packages/container_registry/  
+The project's images can be viewed at the following URL: https://gitlab.fdmci.hva.nl/knvb-2/knvb-team-2/container_registry/
 
-Use the built-in continuous integration in GitLab.
-
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/index.html)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing(SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
-
-***
-
-# Editing this README
-
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thank you to [makeareadme.com](https://www.makeareadme.com/) for this template.
-
-## Suggestions for a good README
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
-
-## Name
-Choose a self-explaining name for your project.
-
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
-
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
-
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
-
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
-
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
-
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
-
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
-
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
-
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
-
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+#### **Run a Docker image from the Container Registry**
+1. We first need to get a Deploy Token with at least *read_registry* access from GitLab. That token will be used to login to the Container Registry. Follow the steps in this URL to obtain such a token: https://docs.gitlab.com/ee/user/project/deploy_tokens/index.html
+2. The second step is to authenticate with the Container Registry. You can do that by entering: <code>*docker login gitlab.fdmci.hva.nl:5050 -u (token username) -p (token)*</code> into the terminal.
+3. After logging in, we now need to choose which image we want to run from the Container Registry. Use this URL: https://gitlab.fdmci.hva.nl/knvb-2/knvb-team-2/container_registry/, then choose an image and copy the image path like this: *gitlab.fdmci.hva.nl:5050/knvb-2/knvb-team-2/knvb-images:latest*.
+4. With this image path we can now enter: <code>*docker run gitlab.fdmci.hva.nl:5050/knvb-2/knvb-team-2/knvb-images:latest -p 5000:5000*</code> into the terminal. This will run the image on port 5000.
+5. The only step left now is to visit: http://localhost:5000/
