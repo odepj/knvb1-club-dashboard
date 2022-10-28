@@ -20,7 +20,6 @@ fig = go.Figure()
 fig.add_trace(go.Box(
     x=df['team_naam'],
     y=df['Oog_hand_coordinatie_1'],
-    z=df['speler_code'],
     name="Oog hand coordinatie 1ste meting",
     jitter=0.3,
     pointpos=-1.8,
