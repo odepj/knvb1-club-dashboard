@@ -1,8 +1,11 @@
 from sqlalchemy import select
 from sqlalchemy.engine.cursor import CursorResult
-
+import pandas as pd
 from database import session_factory, engine
 from database.models import Account, Han
+
+
+session = session_factory()
 
 
 def execute_query(query: str) -> CursorResult:
@@ -64,10 +67,19 @@ def request_zijwaarts_springen(team_name: str, club_code: str):
 
 # request change of direction by team_name and bvo_id
 def request_change_of_direction(team_name: str, club_code: str):
-    session = session_factory()
     # return \
     return session.execute(
         select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
                Han.CoD_rechts_beste, Han.Staande_lengte, Han.club_code)
         .where(Han.team_naam == team_name, Han.club_code == club_code)
     )
+
+
+def request_algemene_moteriek():
+    return pd.DataFrame(session.execute(
+        select(Han.id, Han.club_code, Han.team_naam, Han.meting,
+               Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
+               Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
+               Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
+               Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal)
+    ))

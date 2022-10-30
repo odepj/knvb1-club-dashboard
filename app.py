@@ -11,7 +11,6 @@ def init_app():
         return app
 
 app = init_app()
-
 app.secret_key = 'databaseproject'
 
 
@@ -68,6 +67,11 @@ def zijwaarts_verplaatsen():
 @app.route('/dashboard/cod', methods=['GET', 'POST'])
 def change_of_direction():
     return render_templates.change_of_direction()
+
+
+@app.route('/dashboard/algemene_moteriek', methods=['GET', 'POST'])
+def algemene_moteriek():
+    return render_templates.algemene_moteriek()
 
 
 if __name__ == "__main__":
