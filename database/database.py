@@ -77,9 +77,10 @@ def request_change_of_direction(team_name: str, club_code: str):
 
 def request_algemene_moteriek():
     return pd.DataFrame(session.execute(
-        select(Han.id, Han.club_code, Han.team_naam, Han.meting,
+        select(Han.id, Account.display_name, Han.club_code, Han.team_naam, Han.meting,
                Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal)
+        .where(Account.id == Han.club_code)
     ))

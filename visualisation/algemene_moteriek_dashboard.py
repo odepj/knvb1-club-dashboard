@@ -21,7 +21,7 @@ columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance
 # This method is used to prepare all the required rows based on the selected tests in the dropdown menu
 def filter_test_data(tests: list):
     column_results = [columns.get(test) for test in tests if test in columns]
-    column_results.insert(0, ["id", "club_code", "team_naam", "meting"])
+    column_results.insert(0, ["id", "display_name","club_code", "team_naam", "meting"])
 
     return list(numpy.concatenate(column_results).flat)
 
@@ -43,21 +43,21 @@ def filter_data(teams, tests, measurements):
     return final_results
 
 
-# This method is used to get the total BLOC-score per team_naam, meting and club_code
+# This method is used to get the total BLOC-score per team_naam, meting and club code/name
 def get_filtered_sum(teams, tests, measurements):
     bvo_id = session.get("id")
     filtered_data = filter_data(teams, tests, measurements)
     club_sorted = filtered_data[filtered_data["club_code"] == bvo_id]
 
-    return club_sorted.groupby(["team_naam", "meting", "club_code"]).agg('sum')
+    return club_sorted.groupby(["team_naam", "meting", "club_code",  "display_name"]).agg('sum')
 
 
 # This method is used to get the median for each BLOC-test by getting the mean from the sum of all club_codes
 def get_filtered_mean(teams, tests, measurements):
     filtered_data = filter_data(teams, tests, measurements)
-    sum = filtered_data.groupby(["team_naam", "meting", "club_code"]).agg('sum')
+    sum = filtered_data.groupby(["team_naam", "meting", "club_code", "display_name"]).agg('sum')
 
-    return sum.reset_index().groupby(["team_naam", "club_code"]).agg('mean')
+    return sum.reset_index().groupby(["team_naam", "club_code", "display_name"]).agg('mean')
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -129,7 +129,7 @@ def init_dashboard(server):
 
             # DataTable containing all the variable items medians per team and club are initialised below
             dbc.Container([
-                html.H5("Medianen van BLOC-test score per team van uw en alle andere clubs (punten)",
+                html.H5("Medianen van BLOC-test score per team voor alle clubs (punten)",
                         style={"text-align": "center"}),
                 dash_table.DataTable(
                     id='algemene_moteriek_data_table', style_table={'overflowY': 'scroll'}, style_data={
@@ -172,14 +172,14 @@ def init_callbacks(dash_app):
                       "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen",
                       "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie"}
 
-        # Get the filtered sum data, columns containing total values and club_code
+        # Get the filtered sum data, columns containing total values and club name
         filtered_data = get_filtered_sum(teams, tests, measurements).reset_index()
         total_columns = filtered_data.filter(regex='totaal').columns
-        club_code = filtered_data["club_code"].get(0, "Geen club code beschikbaar")
+        club = filtered_data["display_name"].get(0, "Geen club beschikbaar")
 
         # Create a bar chart using the filtered data and add additional styling and hover information        
         fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                     title=f"BLOC-test totaal score per team voor uw club: {club_code}")
+                     title=f"BLOC-test totaal score per team voor uw club: {club}")
 
         fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
                           barmode='stack', legend_title="BLOC-testen", title_x=0.5)
@@ -198,8 +198,7 @@ def init_callbacks(dash_app):
                         Input("tests", "value"),
                         Input("measurements", "value")])
     def update_data_table(teams, tests, measurements):
-        bvo_id = session.get("id")
-        column_names = {"club_code": "Club", "team_naam": "Team",
+        column_names = {"display_name": "Club", "team_naam": "Team",
                         "Balance_beam_totaal": "Evenwichtsbalk mediaan",
                         "Zijwaarts_springen_totaal": "Zijwaarts springen mediaan",
                         "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen mediaan",
@@ -207,12 +206,9 @@ def init_callbacks(dash_app):
 
         # Only get the values that contain any of the regex values, these will be used for the data table
         filtered_data = get_filtered_mean(teams, tests, measurements).reset_index().filter(
-            regex='totaal|club_code|team_naam')
+            regex='totaal|display_name|team_naam')
 
         # rename all columns to readable names for the data table using the column_names dictionary
         filtered_data.rename(columns=dict(column_names), inplace=True)
-
-        # change all values that have the user's bv_id to 'Uw club' to let the user know that that is their own median
-        filtered_data.loc[filtered_data["Club"] == bvo_id, "Club"] = "Uw club"
 
         return filtered_data.to_dict('records'), [{"name": i, "id": i} for i in filtered_data.columns]
