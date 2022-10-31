@@ -1,5 +1,8 @@
 from flask import render_template, redirect, session, url_for, request, session
+from passlib.hash import sha256_crypt
 import database.database as db
+import random
+import string
 
 
 def authenticate_dashboard():
@@ -16,8 +19,10 @@ def handle_request():
         password = request.form['password']
         email = request.form['email']
         club = request.form['club']
-        print("hier")
-        db.store_account(username, password, email, club)
+        letters = string.ascii_lowercase
+        db.store_account(''.join(random.choice(letters) for i in range(5)),
+                         username, sha256_crypt.encrypt(password),
+                         email, club)
         return redirect("/")
     else:
         return render_template('request.html')

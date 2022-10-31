@@ -19,9 +19,9 @@ def request_account(username: str, password: str):
 
 
 # store account in database
-def store_account(username: str, password: str, email: str, club: str):
+def store_account(id: str, username: str, password, email: str, club: str):
     session = session_factory()
-    newAccount = Account("12345", username, password, email, club, False)
+    newAccount = Account(id, username, password, email, club, False)
     session.add(newAccount)
     session.commit()
     return '<h1>account stored</h1>'
