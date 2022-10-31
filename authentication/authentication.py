@@ -6,6 +6,23 @@ def authenticate_dashboard():
     return render_template('dashboard.html') if session.get('loggedin') else redirect('/login')
 
 
+def handle_request():
+    errorMessage = ''
+    if request.method == 'POST' and 'username' in request.form and\
+            'password' in request.form and\
+            'email' in request.form and\
+            'club' in request.form:
+        username = request.form['username']
+        password = request.form['password']
+        email = request.form['email']
+        club = request.form['club']
+        print("hier")
+        db.store_account(username, password, email, club)
+        return redirect("/")
+    else:
+        return render_template('request.html')
+
+
 def handle_login():
     loggedin = session.get('loggedin')
     if (loggedin):

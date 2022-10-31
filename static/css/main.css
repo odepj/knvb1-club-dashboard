@@ -102,7 +102,6 @@ body {
 
 .accwrapper {
     width: 100%;
-    display: flex;
 }
 
 .accfoto {
@@ -110,7 +109,6 @@ body {
 }
 
 .acctekst {
-    width: 50%;
     height: 100vh;
     display: flex;
     flex-direction: column;

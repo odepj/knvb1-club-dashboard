@@ -1,5 +1,5 @@
 from flask import Flask, render_template
-from authentication.authentication import authenticate_dashboard, handle_logout, handle_login
+from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
 import render_templates
 
 
@@ -11,6 +11,11 @@ app.secret_key = 'databaseproject'
 def intro():
     return render_template('intro.html')
 
+
+@app.route('/request', methods=['GET', 'POST'])
+def request():
+    render_template('request.html')
+    return handle_request()
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
