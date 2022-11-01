@@ -14,8 +14,8 @@ def intro():
 
 @app.route('/request', methods=['GET', 'POST'])
 def request():
-    render_template('request.html')
     return handle_request()
+
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():

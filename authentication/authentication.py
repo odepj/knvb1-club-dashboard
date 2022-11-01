@@ -11,9 +11,9 @@ def authenticate_dashboard():
 
 def handle_request():
     errorMessage = ''
-    if request.method == 'POST' and 'username' in request.form and\
-            'password' in request.form and\
-            'email' in request.form and\
+    if request.method == 'POST' and 'username' in request.form and \
+            'password' in request.form and \
+            'email' in request.form and \
             'club' in request.form:
         username = request.form['username']
         password = request.form['password']
