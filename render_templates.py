@@ -1,5 +1,6 @@
 from flask import render_template, request, session, redirect
 from visualisation import scatterplot
+from visualisation import handcorplot
 from database import database
 
 
@@ -51,7 +52,7 @@ def hand_oog_coordinatie():
         return redirect('/login')
 
     result = database.request_hand_oog_coordinatie(team_selection, bvo_id)
-    graphJSON = scatterplot.hand_oog_coordinatie(result)
+    graphJSON = handcorplot.hand_oog_coordinatie(result)
     header = "Hand-Oog Coordinatie"
     description = f"Resultaten van de hand-oog coordinatie voor de groep {team_selection} jaar. "
     template_location = 'dashboard/handoogcoordinatie.html'

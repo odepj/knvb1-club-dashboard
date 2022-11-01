@@ -31,24 +31,6 @@ def vertesprong(data):
     return create_default_scatterplot(
         data, column_names, x, y, color, hover_data, labels)
 
-
-def hand_oog_coordinatie(data):
-    column_names = {0: 'id', 1: 'Oog_hand_coordinatie_1', 2: 'Oog_hand_coordinatie_2',
-                    3: 'Oog_hand_coordinatie_Totaal', 4: 'Lengte_bovenlichaam'}
-    x = 'Lengte_bovenlichaam'
-    y = 'Oog_hand_coordinatie_Totaal'
-    color = 'Oog_hand_coordinatie_Totaal'
-    hover_data = ['Oog_hand_coordinatie_1',
-                  'Oog_hand_coordinatie_2', 'id']
-    labels = {
-        "Lengte_bovenlichaam": "Lengte bovenlichaam in centimeters",
-        "Oog_hand_coordinatie_Totaal": "Hand Oog Coordinatie Totaal"
-    }
-
-    return create_default_scatterplot(
-        data, column_names, x, y, color, hover_data, labels)
-
-
 def evenwichtsbalk(data):
     column_names = {0: 'id', 1: 'Balance_Beam_6cm', 2: 'Balance_Beam_4_5cm',
                     3: 'Balance_Beam_3cm', 4: 'Balance_beam_totaal', 5: 'Staande_lengte'}
