@@ -185,19 +185,15 @@ def init_callbacks(dash_app):
 
         hover_template = """Club naam: %{customdata[0]} <br>Club code: %{customdata[1]}
         <br>Team: %{x} <br>Totaal score: %{y} punten <br>Meting: %{customdata[2]}
-        <br><br>BLOC-test resultaten:<br>"""
+        <br><br>BLOC-test specifieke totaal scores:<br>"""
 
         # Generate a hover_template for details on the demand by looping over the available details
         for i in range(3, len(details_on_demand)):
-            hover_template += f"%{{customdata[{i}]}} <br>"
-            
-
-            print(details_on_demand[i])
-            print(hover_template)        
+            hover_template += f"{details_on_demand[i]}: %{{customdata[{i}]}} punten<br>"
 
         # Create a bar chart using the filtered data and add additional styling and hover information        
         fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                     title=f"BLOC-test totaal score per team voor uw club: {club}", 
+                     title=f"BLOC-test totaal scores per team voor uw club: {club}", 
                      custom_data=details_on_demand)
 
         fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
