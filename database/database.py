@@ -38,10 +38,13 @@ def request_sprinten(team_name: str, club_code: str):
 
 
 # request handoogcoordinatie by team_name and bvo_id
-def request_hand_oog_coordinatie(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `Oog_hand_coordinatie_1`, `Oog_hand_coordinatie_2`, `Oog_hand_coordinatie_Totaal`, 
-        `Zithoogte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
+def request_hand_oog_coordinatie(club_code: str):
+    return pd.DataFrame(session.execute(
+        select(Han.speler_code, Han.Oog_hand_coordinatie_totaal, 
+            Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
+            Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
+        .where(Han.club_code == club_code)
+    ))
 
 
 # request evenwichtsbalk by team_name and bvo_id
