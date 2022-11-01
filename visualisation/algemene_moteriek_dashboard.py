@@ -177,14 +177,33 @@ def init_callbacks(dash_app):
         total_columns = filtered_data.filter(regex='totaal').columns
         club = filtered_data["display_name"].get(0, "Geen club beschikbaar")
 
+        # Get all the details on demand columns from the columns dictionary that are not in the total_columns
+        details_on_demand = [columns.get(test) for test in tests if test in columns]
+        details_on_demand.insert(0, ["display_name", "club_code", "meting"])
+        details_on_demand = list(filter(lambda x: (x not in total_columns), 
+                            numpy.concatenate(details_on_demand).flat))
+
+        hover_template = """Club naam: %{customdata[0]} <br>Club code: %{customdata[1]}
+        <br>Team: %{x} <br>Totaal score: %{y} punten <br>Meting: %{customdata[2]}
+        <br><br>BLOC-test resultaten:<br>"""
+
+        # Generate a hover_template for details on the demand by looping over the available details
+        for i in range(3, len(details_on_demand)):
+            hover_template += f"%{{customdata[{i}]}} <br>"
+            
+
+            print(details_on_demand[i])
+            print(hover_template)        
+
         # Create a bar chart using the filtered data and add additional styling and hover information        
         fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                     title=f"BLOC-test totaal score per team voor uw club: {club}")
+                     title=f"BLOC-test totaal score per team voor uw club: {club}", 
+                     custom_data=details_on_demand)
 
         fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
                           barmode='stack', legend_title="BLOC-testen", title_x=0.5)
 
-        fig.update_traces(hovertemplate="Team: %{x} <br> Totaal score: %{y} punten")
+        fig.update_traces(hovertemplate=hover_template)
 
         # rename every BLOC test variable to readable names for the legend and bars using the test_names dictionary
         fig.for_each_trace(lambda t: t.update(name=test_names[t.name]))
