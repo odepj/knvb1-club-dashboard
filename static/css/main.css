@@ -100,9 +100,21 @@ body {
     margin-bottom: 0;
 }
 
-.accwrapper {
+.formwrapper {
     width: 100%;
+}
+
+.formtext {
+    height: 100vh;
     display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-flow: column;
+}
+
+.accwrapper {
+    display: flex;
+    width: 100%;
 }
 
 .accfoto {

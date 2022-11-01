@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import select, insert
 from sqlalchemy.engine.cursor import CursorResult
 import pandas as pd
 from database import session_factory, engine
@@ -19,6 +19,15 @@ def request_account(username: str, password: str):
         select(Account.id, Account.username, Account.display_name)
         .where(Account.username == username, Account.password == password)
     ).fetchone()
+
+
+# store account in database
+def store_account(id: str, username: str, password, email: str, club: str):
+    session = session_factory()
+    newAccount = Account(id, username, password, email, club, False)
+    session.add(newAccount)
+    session.commit()
+    return '<h1>account stored</h1>'
 
 
 # request vertesprong by team_name and bvo_id
