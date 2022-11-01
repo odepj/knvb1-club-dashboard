@@ -2,8 +2,15 @@ from flask import Flask, render_template
 from authentication.authentication import authenticate_dashboard, handle_logout, handle_login
 import render_templates
 
+def init_app():
+    app = Flask(__name__)
 
-app = Flask(__name__)
+    with app.app_context():
+        from visualisation.algemene_moteriek_dashboard import init_dashboard
+        app = init_dashboard(app) 
+        return app
+
+app = init_app()
 app.secret_key = 'databaseproject'
 
 
@@ -60,6 +67,11 @@ def zijwaarts_verplaatsen():
 @app.route('/dashboard/cod', methods=['GET', 'POST'])
 def change_of_direction():
     return render_templates.change_of_direction()
+
+
+@app.route('/dashboard/algemene_moteriek', methods=['GET', 'POST'])
+def algemene_moteriek():
+    return render_templates.algemene_moteriek()
 
 
 if __name__ == "__main__":

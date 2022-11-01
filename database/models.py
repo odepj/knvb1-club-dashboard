@@ -41,19 +41,19 @@ class Han(Base):
     Zithoogte = Column(Float())
     Gewicht = Column(Float())
     Maturity_Offset = Column(Float())
-    Balance_Beam_6cm = Column(Float())
-    Balance_Beam_4_5cm = Column(Float())
-    Balance_Beam_3cm = Column(Float())
-    Balance_beam_totaal = Column(Float())
-    Zijwaarts_springen_1 = Column(Float())
-    Zijwaarts_springen_2 = Column(Float())
-    Zijwaarts_springen_totaal = Column(Float())
-    Zijwaarts_verplaatsen_1 = Column(Float())
-    Zijwaarts_verplaatsen_2 = Column(Float())
-    Zijwaarts_verplaatsen_totaal = Column(Float())
-    Oog_hand_coordinatie_1 = Column(Float())
-    Oog_hand_coordinatie_2 = Column(Float())
-    Oog_hand_coordinatie_Totaal = Column(Float())
+    Balance_Beam_6cm = Column(Integer())
+    Balance_Beam_4_5cm = Column(Integer())
+    Balance_Beam_3cm = Column(Integer())
+    Balance_beam_totaal = Column(Integer())
+    Zijwaarts_springen_1 = Column(Integer())
+    Zijwaarts_springen_2 = Column(Integer())
+    Zijwaarts_springen_totaal = Column(Integer())
+    Zijwaarts_verplaatsen_1 = Column(Integer())
+    Zijwaarts_verplaatsen_2 = Column(Integer())
+    Zijwaarts_verplaatsen_totaal = Column(Integer())
+    Oog_hand_coordinatie_1 = Column(Integer())
+    Oog_hand_coordinatie_2 = Column(Integer())
+    Oog_hand_coordinatie_totaal = Column(Integer())
     X10_meter_sprint_1 = Column(Float())
     X10_meter_sprint_2 = Column(Float())
     X10_meter_sprint_beste = Column(Float())
@@ -80,7 +80,7 @@ class Han(Base):
                  Gewicht, Maturity_Offset, Balance_Beam_6cm, Balance_Beam_4_5cm, Balance_Beam_3cm, Balance_beam_totaal,
                  Zijwaarts_springen_1, Zijwaarts_springen_2, Zijwaarts_springen_totaal, Zijwaarts_verplaatsen_1,
                  Zijwaarts_verplaatsen_2, Zijwaarts_verplaatsen_totaal, Oog_hand_coordinatie_1, Oog_hand_coordinatie_2,
-                 Oog_hand_coordinatie_Totaal, X10_meter_sprint_1, X10_meter_sprint_2, X10_meter_sprint_beste,
+                 Oog_hand_coordinatie_totaal, X10_meter_sprint_1, X10_meter_sprint_2, X10_meter_sprint_beste,
                  X20_meter_sprint_1, X20_meter_sprint_2, X20_meter_sprint_beste, X30_meter_sprint_1, X30_meter_sprint_2,
                  X30_meter_sprint_beste, CoD_links_1, CoD_links_2, CoD_links_beste, CoD_rechts_1, CoD_rechts_2,
                  CoD_rechts_beste, Vertesprong_1, Vertesprong_2, Vertesprong_beste, club_code, datum, geboortedatum,
@@ -107,7 +107,7 @@ class Han(Base):
         self.Zijwaarts_verplaatsen_totaal = Zijwaarts_verplaatsen_totaal
         self.Oog_hand_coordinatie_1 = Oog_hand_coordinatie_1
         self.Oog_hand_coordinatie_2 = Oog_hand_coordinatie_2
-        self.Oog_hand_coordinatie_Totaal = Oog_hand_coordinatie_Totaal
+        self.Oog_hand_coordinatie_Totaal = Oog_hand_coordinatie_totaal
         self.X10_meter_sprint_1 = X10_meter_sprint_1
         self.X10_meter_sprint_2 = X10_meter_sprint_2
         self.X10_meter_sprint_beste = X10_meter_sprint_beste
