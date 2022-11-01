@@ -4,8 +4,8 @@ def hand_oog_coordinatie(data):
     from plotly.utils import PlotlyJSONEncoder
     import json
 
-    df = pd.DataFrame([[ij for ij in i] for i in data])
-    df.rename(columns={0: 'Oog_hand_coordinatie_Totaal', 1: 'Oog_hand_coordinatie_1', 2: 'Oog_hand_coordinatie_2', 3: 'team_naam'},
+    df = data
+    df.rename(columns={0: 'Oog_hand_coordinatie_totaal', 1: 'Oog_hand_coordinatie_1', 2: 'Oog_hand_coordinatie_2', 3: 'team_naam'},
               inplace=True)
 
     fig = go.Figure()
@@ -31,14 +31,15 @@ def hand_oog_coordinatie(data):
 
     fig.add_trace(go.Box(
     x=df['team_naam'],
-    y=df['Oog_hand_coordinatie_Totaal'], 
+    y=df['Oog_hand_coordinatie_totaal'], 
     name="Oog hand coordinatie Totaal",
     boxpoints='all', # represent all points
     marker_color='rgb(9,56,125)',
     line_color='rgb(255,128,0)'
     ))
 
-    fig.update_layout(title_text="Hand-oog coördinatie")
+    fig.update_layout(title_text="Hand-oog coördinatie", width=1000, height=600)
     fig.update_layout(xaxis_title="Leeftijdscategorie", yaxis_title="Score Hand-oog coördinatie meting")
 
     return json.dumps(fig, cls=PlotlyJSONEncoder)
+    
