@@ -74,3 +74,8 @@ virtualenv==20.14.1
 Werkzeug==1.0.1
 wsproto==1.1.0
 pymysql==1.0.2
+dash==2.6.1
+dash-bootstrap-components==1.2.1
+dash-core-components==2.0.0
+dash-html-components==2.0.0
+dash-table==5.0.0
