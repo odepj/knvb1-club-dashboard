@@ -1,7 +1,7 @@
 from flask import render_template, request, session, redirect
 from visualisation import scatterplot
+from visualisation import handcorplot
 from database import database
-
 
 def get_bvo_id():
     return session.get('id')
@@ -45,15 +45,14 @@ def sprinten():
 
 def hand_oog_coordinatie():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
 
-    result = database.request_hand_oog_coordinatie(team_selection, bvo_id)
-    graphJSON = scatterplot.hand_oog_coordinatie(result)
+    result = database.request_hand_oog_coordinatie(bvo_id)
+    graphJSON = handcorplot.hand_oog_coordinatie(result)
     header = "Hand-Oog Coordinatie"
-    description = f"Resultaten van de hand-oog coordinatie voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de hand-oog coordinatie"
     template_location = 'dashboard/handoogcoordinatie.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
@@ -121,3 +120,15 @@ def change_of_direction():
     template_location = 'dashboard/cod.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+
+
+def algemene_moteriek():
+    bvo_id = get_bvo_id()
+
+    if (bvo_id == None):
+        return redirect('/login')
+        
+    header = "Algemene Moteriek"
+    template_location = 'dashboard/algemene_moteriek.html'
+
+    return render_template(template_location, header=header)    

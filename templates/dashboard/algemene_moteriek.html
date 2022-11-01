@@ -18,24 +18,12 @@
             </div>
     </nav>
 </div>
-
-
 <div class="dashboard">
     <div class="flexcontainer">
-        <h1 class="statistieken">{{ header }}</h1>
         <a class="backarrow" href="/dashboard"><img src="/static/images/arrowleft.svg"></a>
-        <p>{{ description }}</p>
-        <div class="chartcontainer">
-            <div id="chart" class="chart"></div>
-        </div>
-        </div>
+        <h1 class="statistieken">{{ header }}</h1>
+        <span class="bi bi-arrow-left-circle"></span>
+        <iframe src="/dashboard/dash/moteriek_dashboard/" class="w-100 h-100"></iframe>
     </div>
 </div>
-<script>
-     $('input[type=radio]').on('change', function() {
-         $('button[type=submit]').click();})
-
-    var graphs = {{ graphJSON | safe}}
-    Plotly.plot('chart', graphs, {});
-</script>
 {% endblock %}
