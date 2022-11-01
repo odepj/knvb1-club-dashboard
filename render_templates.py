@@ -3,7 +3,6 @@ from visualisation import scatterplot
 from visualisation import handcorplot
 from database import database
 
-
 def get_bvo_id():
     return session.get('id')
 
@@ -121,3 +120,15 @@ def change_of_direction():
     template_location = 'dashboard/cod.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+
+
+def algemene_moteriek():
+    bvo_id = get_bvo_id()
+
+    if (bvo_id == None):
+        return redirect('/login')
+        
+    header = "Algemene Moteriek"
+    template_location = 'dashboard/algemene_moteriek.html'
+
+    return render_template(template_location, header=header)    
