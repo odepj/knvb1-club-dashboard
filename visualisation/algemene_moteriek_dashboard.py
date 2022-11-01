@@ -52,12 +52,12 @@ def get_filtered_sum(teams, tests, measurements):
     return club_sorted.groupby(["team_naam", "meting", "club_code",  "display_name"]).agg('sum')
 
 
-# This method is used to get the median for each BLOC-test by getting the mean from the sum of all club_codes
-def get_filtered_mean(teams, tests, measurements):
+# This method is used to get the median for each BLOC-test by getting the median from the sum of all club_codes
+def get_filtered_median(teams, tests, measurements):
     filtered_data = filter_data(teams, tests, measurements)
     sum = filtered_data.groupby(["team_naam", "meting", "club_code", "display_name"]).agg('sum')
 
-    return sum.reset_index().groupby(["team_naam", "club_code", "display_name"]).agg('mean')
+    return sum.reset_index().groupby(["team_naam", "club_code", "display_name"]).agg('median')
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -79,7 +79,7 @@ def init_dashboard(server):
                     dcc.Dropdown(
                         [team_name for team_name in result["team_naam"].unique()],
                         id="teams",
-                        placeholder="Select één of meerdere team(s)",
+                        placeholder="Selecteer één of meerdere team(s)",
                         value=result["team_naam"].unique(),
                         multi=True
                     ),
@@ -95,7 +95,7 @@ def init_dashboard(server):
                         id="tests",
                         value=["Evenwichtsbalk", "Zijwaarts springen",
                                "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
-                        placeholder="Select één of meerdere BLOC test(en)",
+                        placeholder="Selecteer één of meerdere BLOC test(en)",
                         multi=True
                     ),
                 ],
@@ -220,7 +220,7 @@ def init_callbacks(dash_app):
                         "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie mediaan"}
 
         # Only get the values that contain any of the regex values, these will be used for the data table
-        filtered_data = get_filtered_mean(teams, tests, measurements).reset_index().filter(
+        filtered_data = get_filtered_median(teams, tests, measurements).reset_index().filter(
             regex='totaal|display_name|team_naam')
 
         # rename all columns to readable names for the data table using the column_names dictionary
