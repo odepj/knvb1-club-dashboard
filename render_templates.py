@@ -1,5 +1,6 @@
 from flask import render_template, request, session, redirect
 from visualisation import scatterplot
+from visualisation import balancebeamplot
 from database import database
 
 
@@ -67,7 +68,7 @@ def evenwichtsbalk():
         return redirect('/login')
 
     result = database.request_evenwichtsbalk(team_selection, bvo_id)
-    graphJSON = scatterplot.evenwichtsbalk(result)
+    graphJSON = balancebeamplot.evenwichtsbalk(result)
     header = "Evenwichtsbalk"
     description = f"Resultaten van de evenwichtsbalk voor de groep {team_selection} jaar. "
     template_location = 'dashboard/evenwichtsbalk.html'
