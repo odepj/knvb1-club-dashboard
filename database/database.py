@@ -42,10 +42,12 @@ def request_hand_oog_coordinatie(team_name: str, club_code: str):
     return execute_query(query)
 
 
-# request evenwichtsbalk by team_name and bvo_id
-def request_hand_oog_coordinatie(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `Evenwichtsbalk_3cm`, `Evenwichtsbalk_4_5cm`, `Evenwichtsbalk_6cm`, `Evenwichtsbalk_Totaal`,
-        `Zithoogte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
+# request zijwaarts verplaatsen by team_name and bvo_id
+def request_zijwaarts_verplaatsen(team_name: str, club_code: str):
+    query = f"""SELECT `id`, `Zijwaarts_verplaatsen_1`, `Zijwaarts_verplaatsen_2`, `Zijwaarts_verplaatsen_totaal`, 
+        `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
+    return execute_query(query)
+
 
 # request evenwichtsbalk by team_name and bvo_id
 def request_evenwichtsbalk(team_name: str, club_code: str):
