@@ -68,7 +68,7 @@ def evenwichtsbalk():
         return redirect('/login')
 
     result = database.request_evenwichtsbalk(team_selection, bvo_id)
-    graphJSON = balancebeamplot.evenwichtsbalk(result)
+    graphJSON = balancebeamplot(result)
     header = "Evenwichtsbalk"
     description = f"Resultaten van de evenwichtsbalk voor de groep {team_selection} jaar. "
     template_location = 'dashboard/evenwichtsbalk.html'
