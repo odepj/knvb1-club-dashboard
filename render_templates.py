@@ -60,18 +60,15 @@ def hand_oog_coordinatie():
 
 def evenwichtsbalk():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
-
-    result = database.request_evenwichtsbalk(team_selection, bvo_id)
-    graphJSON = scatterplot.evenwichtsbalk(result)
+        
     header = "Evenwichtsbalk"
-    description = f"Resultaten van de evenwichtsbalk voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de evenwichtsbalk metingen"
     template_location = 'dashboard/evenwichtsbalk.html'
 
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+    return render_template(template_location, header=header)   
 
 
 def zijwaarts_verplaatsen():

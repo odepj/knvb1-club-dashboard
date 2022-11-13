@@ -49,18 +49,18 @@ def request_sprinten(team_name: str, club_code: str):
 # request handoogcoordinatie by team_name and bvo_id
 def request_hand_oog_coordinatie(club_code: str):
     return pd.DataFrame(session.execute(
-        select(Han.speler_code, Han.Oog_hand_coordinatie_totaal, 
-            Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
-            Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
+        select(Han.speler_code, Han.Oog_hand_coordinatie_totaal,
+               Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
+               Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
         .where(Han.club_code == club_code)
     ))
 
 
 # request evenwichtsbalk by team_name and bvo_id
-def request_evenwichtsbalk(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `Balance_Beam_6cm`, `Balance_Beam_4_5cm`, `Balance_Beam_3cm`, `Balance_beam_totaal`,
-    `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
+def request_evenwichtsbalk():
+    return pd.DataFrame(session.execute(
+        select(Han.id, Han.club_code, Han.team_naam, Han.meting, Han.datum,
+               Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal)))
 
 
 # request zijwaarts verplaatsen by team_name and bvo_id

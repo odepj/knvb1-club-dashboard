@@ -62,7 +62,7 @@ def get_filtered_median(teams, tests, measurements):
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
 # This workaround allows us to use Dash inside a Flask app by using its own route
-def init_dashboard(server):
+def init_algemene_moteriek_dashboard(server):
     dash_app = dash.Dash(
         server=server,
         routes_pathname_prefix='/dashboard/dash/moteriek_dashboard/',
