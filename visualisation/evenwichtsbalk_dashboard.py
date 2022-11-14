@@ -24,9 +24,72 @@ def filter_data(selection):
     return filtered_data
 
 
-def calculate_medians(dataframe: pd.DataFrame) -> pd.DataFrame:
-    # voor nu zijn dit allen de mediaanen per team en meting
+def calculate_medians_by_team(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe.groupby(["team_naam"]).median(numeric_only=True).reset_index()
+
+
+def calculate_medians_by_measurement(dataframe: pd.DataFrame) -> pd.DataFrame:
+    return dataframe.groupby(["team_naam", "meting"]).median(numeric_only=True).reset_index()
+
+
+def calculate_delta(dataframe: pd.DataFrame) -> pd.DataFrame:
+    medians = calculate_medians_by_measurement(dataframe)
+    return medians
+
+
+def create_balance_beam_plots(df_club: pd.DataFrame):
+    bb3cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_3cm"],
+                   boxpoints='all', name="Evenwichtsbalk 3 cm", marker_color="#636EFA")
+    bb4_5cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_4_5cm"],
+                     boxpoints='all', name="Evenwichtsbalk 4,5 cm", marker_color="#EF553B")
+    bb6cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_6cm"],
+                   boxpoints='all',  name="Evenwichtsbalk 6 cm", marker_color="#00CC96")
+    bb_total = go.Box(x=df_club["team_naam"], y=df_club["Balance_beam_totaal"],
+                      name="Evenwichtsbalk totaal", marker_color="#AB63FA")
+    return [bb3cm, bb4_5cm, bb6cm, bb_total]
+
+
+def create_balance_beam_median_plots(team_medians: pd.DataFrame):
+    bb3cm_m = go.Scatter(x=team_medians["team_naam"], y=team_medians["Balance_Beam_3cm"],
+                         mode='lines+markers', name="Evenwichtsbalk 3 cm mediaan", line_color="#636EFA")
+    bb4_5cm_m = go.Scatter(x=team_medians["team_naam"], y=team_medians["Balance_Beam_4_5cm"],
+                           name="Evenwichtsbalk 4,5 cm mediaan", mode='lines+markers', line_color='#EF553B')
+    bb6cm_m = go.Scatter(x=team_medians["team_naam"], y=team_medians["Balance_Beam_6cm"],
+                         name="Evenwichtsbalk 6 cm mediaan", mode='lines+markers', line_color='#00CC96')
+    bb_total_m = go.Scatter(x=team_medians["team_naam"], y=team_medians["Balance_beam_totaal"],
+                            name="Evenwichtsbalk totaal mediaan", mode='lines+markers', line_color='#AB63FA')
+    return [go.Figure(data=[bb3cm_m, bb4_5cm_m, bb6cm_m]), bb_total_m]
+
+
+def create_total_progression_plot(measurement_medians: pd.DataFrame):
+    colours = {
+        "Onder 13": "#FF0000",
+        "Onder 14": "#00FF00",
+        "Onder 15": "#0000FF",
+        "Onder 16": "#4B0082",
+        "Onder 17": "#9400D3",
+    }
+    return px.line(measurement_medians, x="meting", y="Balance_beam_totaal",
+                   color="team_naam", markers=True, color_discrete_map=colours)
+
+
+def create_subplots(bb_plots, bb_m_plots, progression_plot):
+    fig = make_subplots(rows=4, cols=2, column_widths=[0.7, 0.3], x_title="Team", y_title="Aantal stappen", subplot_titles=(
+        "Evenwichtsbalk 3 cm", "Individuele evenwichtsbalk medianen", "Evenwichtsbalk 4,5 cm", "Evenwichtsbalk totaal mediaan",
+        "Evenwichtsbalk 6 cm", "Evenwichtsbalk totaal progressie", "Evenwichtsbalk totaal", ""))
+
+    for i in range(0, 4):
+        fig.add_trace(bb_plots[i], row=i+1, col=1)
+
+    for trace in bb_m_plots[0].data:
+        fig.append_trace(trace, row=1, col=2)
+
+    fig.add_trace(bb_m_plots[1], row=2, col=2)
+
+    for trace in progression_plot.data:
+        fig.append_trace(trace, row=3, col=2)
+
+    return fig
 
 
 def filter_buttons(input_field) -> int:
@@ -45,10 +108,9 @@ def filter_buttons(input_field) -> int:
     else:
         return 0
 
+
 # This method is used by the app.py to initialize the Dash dashboard in Flask
 # This workaround allows us to use Dash inside a Flask app by using its own route
-
-
 def init_evenwichtsbalk_dashboard(server):
     dash_app = dash.Dash(
         server=server,
@@ -61,7 +123,7 @@ def init_evenwichtsbalk_dashboard(server):
             dbc.Button("Handmatige keuze", id="btn-input", color="dark"),
             dbc.Input(id="input-field",
                       type="number", min=1),
-        ], class_name="w-25"),
+        ]),
 
     button_group = html.Div(
         [
@@ -81,8 +143,8 @@ def init_evenwichtsbalk_dashboard(server):
     dash_app.layout = html.Div(children=[
         dbc.Row(
             [
-                dbc.Col(button_group, class_name="text-end"),
-                dbc.Col(input_group),
+                dbc.Col(button_group, class_name="text-end", width=8),
+                dbc.Col(input_group, width=4),
             ],
             class_name="mt-5"),
         dcc.Graph(id="evenwichtsbalk-graph", style={'height': '80vh'}),
@@ -109,42 +171,14 @@ def init_callbacks(dash_app):
     def build_graph(*buttons):
         measurent_input = buttons[0] if ctx.triggered_id == "btn-input" else None
         measurent_selection = filter_buttons(measurent_input)
+
         df_club = filter_data(measurent_selection)
-        deltas = calculate_medians(df_club)
+        bb_plots = create_balance_beam_plots(df_club)
 
-        bb3cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_3cm"],
-                       boxpoints='all', name="Evenwichtsbalk 3 cm", marker_color="#636EFA")
-        bb4_5cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_4_5cm"],
-                         boxpoints='all', name="Evenwichtsbalk 4,5 cm", marker_color="#EF553B")
-        bb6cm = go.Box(x=df_club["team_naam"], y=df_club["Balance_Beam_6cm"],
-                       boxpoints='all',  name="Evenwichtsbalk 6 cm", marker_color="#00CC96")
-        bb_total = go.Box(
-            x=df_club["team_naam"], y=df_club["Balance_beam_totaal"], name="Evenwichtsbalk totaal", marker_color="#AB63FA")
+        team_medians = calculate_medians_by_team(df_club)
+        bb_m_plots = create_balance_beam_median_plots(team_medians)
 
-        bb3cm_m = go.Scatter(x=deltas["team_naam"], y=deltas["Balance_Beam_3cm"],
-                             mode='lines+markers', name="Evenwichtsbalk 3 cm mediaan", line_color="#636EFA")
-        bb4_5cm_m = go.Scatter(x=deltas["team_naam"], y=deltas["Balance_Beam_4_5cm"],
-                               name="Evenwichtsbalk 4,5 cm mediaan", mode='lines+markers', line_color='#EF553B')
-        bb6cm_m = go.Scatter(x=deltas["team_naam"], y=deltas["Balance_Beam_6cm"],
-                             name="Evenwichtsbalk 6 cm mediaan", mode='lines+markers', line_color='#00CC96')
-        bb_total_m = go.Scatter(x=deltas["team_naam"], y=deltas["Balance_beam_totaal"],
-                                name="Evenwichtsbalk totaal mediaan", mode='lines+markers', line_color='#AB63FA')
+        measurement_medians = calculate_medians_by_measurement(df_club)
+        progression_plot = create_total_progression_plot(measurement_medians)
 
-        bb_medians = go.Figure(data=[bb3cm_m, bb4_5cm_m, bb6cm_m])
-
-        fig = make_subplots(rows=4, cols=2, column_widths=[0.7, 0.3], x_title="Team", y_title="Aantal stappen", subplot_titles=(
-            "Evenwichtsbalk 3 cm", "Individuele evenwichtsbalk medianen", "Evenwichtsbalk 4,5 cm", "Evenwichtsbalk totaal mediaan",
-            "Evenwichtsbalk 6 cm", "", "Evenwichtsbalk totaal", ""))
-
-        fig.add_trace(bb3cm, row=1, col=1)
-        fig.add_trace(bb4_5cm, row=2, col=1)
-        fig.add_trace(bb6cm, row=3, col=1)
-        fig.add_trace(bb_total, row=4, col=1)
-
-        for trace in bb_medians.data:
-            fig.append_trace(trace, row=1, col=2)
-            
-        fig.add_trace(bb_total_m, row=2, col=2)
-        
-
-        return fig
+        return create_subplots(bb_plots, bb_m_plots, progression_plot)
