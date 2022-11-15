@@ -58,15 +58,14 @@ def hand_oog_coordinatie():
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
 
-def evenwichtsbalk():
+def evenwichtsbalk_showcase():
     bvo_id = get_bvo_id()
 
     if (bvo_id == None):
         return redirect('/login')
         
     header = "Evenwichtsbalk"
-    description = f"Resultaten van de evenwichtsbalk metingen"
-    template_location = 'dashboard/evenwichtsbalk.html'
+    template_location = 'dashboard/evenwichtsbalk_showcase_2.html'
 
     return render_template(template_location, header=header)   
 

@@ -59,8 +59,9 @@ def request_hand_oog_coordinatie(club_code: str):
 # request evenwichtsbalk by team_name and bvo_id
 def request_evenwichtsbalk():
     return pd.DataFrame(session.execute(
-        select(Han.id, Han.club_code, Han.team_naam, Han.meting, Han.datum,
-               Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal)))
+        select(Han.id, Han.club_code, Account.display_name, Han.team_naam, Han.meting, Han.datum,
+               Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal)
+        .where(Account.id == Han.club_code)))
 
 
 # request zijwaarts verplaatsen by team_name and bvo_id

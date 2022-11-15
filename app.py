@@ -63,7 +63,12 @@ def hand_oog_coordinatie():
 
 @app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
 def evenwichtsbalk():
-    return render_templates.evenwichtsbalk()
+    return None
+
+
+@app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
+def evenwichtsbalk_showcase():
+    return render_templates.evenwichtsbalk_showcase()
 
 
 @app.route('/dashboard/zijwaartsverplaatsen', methods=['GET', 'POST'])

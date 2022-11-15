@@ -12,13 +12,21 @@ result = request_evenwichtsbalk()
 result["datum"] = pd.to_datetime(result["datum"])
 
 
-def filter_data(selection):
+def filter_data_own_club(selection):
     bvo_id = session.get("id")
     measurements = pd.Series(result["meting"].unique())
     measurement_count = selection if selection != 0 else len(measurements)
-
     df_club = result[result["club_code"] == bvo_id]
     filtered_data = df_club[df_club["meting"].isin(
+        measurements.iloc[-measurement_count:])].reset_index(drop=True)
+
+    return filtered_data
+
+
+def filter_data_all_clubs(selection):
+    measurements = pd.Series(result["meting"].unique())
+    measurement_count = selection if selection != 0 else len(measurements)
+    filtered_data = result[result["meting"].isin(
         measurements.iloc[-measurement_count:])].reset_index(drop=True)
 
     return filtered_data
@@ -28,13 +36,12 @@ def calculate_medians_by_team(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe.groupby(["team_naam"]).median(numeric_only=True).reset_index()
 
 
+def calculate_medians_by_club(dataframe: pd.DataFrame) -> pd.DataFrame:
+    return dataframe.groupby(["team_naam", "club_code", "display_name"]).median(numeric_only=True).reset_index()
+
+
 def calculate_medians_by_measurement(dataframe: pd.DataFrame) -> pd.DataFrame:
     return dataframe.groupby(["team_naam", "meting"]).median(numeric_only=True).reset_index()
-
-
-def calculate_delta(dataframe: pd.DataFrame) -> pd.DataFrame:
-    medians = calculate_medians_by_measurement(dataframe)
-    return medians
 
 
 def create_balance_beam_plots(df_club: pd.DataFrame):
@@ -61,6 +68,11 @@ def create_balance_beam_median_plots(team_medians: pd.DataFrame):
     return [go.Figure(data=[bb3cm_m, bb4_5cm_m, bb6cm_m]), bb_total_m]
 
 
+def create_club_comparison_plot(club_medians: pd.DataFrame):
+    return px.line(club_medians, x="team_naam", y="Balance_beam_totaal",
+                   color="display_name", markers=True)
+
+
 def create_total_progression_plot(measurement_medians: pd.DataFrame):
     colours = {
         "Onder 13": "#FF0000",
@@ -73,10 +85,10 @@ def create_total_progression_plot(measurement_medians: pd.DataFrame):
                    color="team_naam", markers=True, color_discrete_map=colours)
 
 
-def create_subplots(bb_plots, bb_m_plots, progression_plot):
+def create_subplots(bb_plots, bb_m_plots, progression_plot, club_comparison_plot):
     fig = make_subplots(rows=4, cols=2, column_widths=[0.7, 0.3], x_title="Team", y_title="Aantal stappen", subplot_titles=(
-        "Evenwichtsbalk 3 cm", "Individuele evenwichtsbalk medianen", "Evenwichtsbalk 4,5 cm", "Evenwichtsbalk totaal mediaan",
-        "Evenwichtsbalk 6 cm", "Evenwichtsbalk totaal progressie", "Evenwichtsbalk totaal", ""))
+        "Evenwichtsbalk 3 cm", "Individuele medianen", "Evenwichtsbalk 4,5 cm", "Totaal mediaan",
+        "Evenwichtsbalk 6 cm", "Totaal mediaan team progressie", "Evenwichtsbalk totaal", "Totaal mediaan per club"))
 
     for i in range(0, 4):
         fig.add_trace(bb_plots[i], row=i+1, col=1)
@@ -88,6 +100,9 @@ def create_subplots(bb_plots, bb_m_plots, progression_plot):
 
     for trace in progression_plot.data:
         fig.append_trace(trace, row=3, col=2)
+
+    for trace in club_comparison_plot.data:
+        fig.append_trace(trace, row=4, col=2)
 
     return fig
 
@@ -172,7 +187,11 @@ def init_callbacks(dash_app):
         measurent_input = buttons[0] if ctx.triggered_id == "btn-input" else None
         measurent_selection = filter_buttons(measurent_input)
 
-        df_club = filter_data(measurent_selection)
+        df_all_clubs = filter_data_all_clubs(measurent_selection)
+        all_club_medians = calculate_medians_by_club(df_all_clubs)
+        club_comparison_plot = create_club_comparison_plot(all_club_medians)
+
+        df_club = filter_data_own_club(measurent_selection)
         bb_plots = create_balance_beam_plots(df_club)
 
         team_medians = calculate_medians_by_team(df_club)
@@ -181,4 +200,4 @@ def init_callbacks(dash_app):
         measurement_medians = calculate_medians_by_measurement(df_club)
         progression_plot = create_total_progression_plot(measurement_medians)
 
-        return create_subplots(bb_plots, bb_m_plots, progression_plot)
+        return create_subplots(bb_plots, bb_m_plots, progression_plot, club_comparison_plot)
