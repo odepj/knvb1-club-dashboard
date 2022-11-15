@@ -1,6 +1,7 @@
 from flask import render_template, request, session, redirect
 from visualisation import scatterplot
 from visualisation import handcorplot
+from visualisation import sprintplot
 from database import database
 
 def get_bvo_id():
@@ -27,17 +28,17 @@ def vertesprong():
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
 
-def sprinten():
+def sprint():
     bvo_id = get_bvo_id()
     team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
 
-    result = database.request_sprinten(team_selection, bvo_id)
-    graphJSON = scatterplot.sprinten(result)
+    result = database.request_sprint(bvo_id)
+    graphJSON = sprintplot.sprint(result)
     header = "Sprint per afstand"
-    description = f"Resultaten van de sprint voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de 10,20 en 30 meter sprint . "
     template_location = 'dashboard/sprint.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
