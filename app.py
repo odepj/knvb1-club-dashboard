@@ -7,7 +7,9 @@ def init_app():
 
     with app.app_context():
         from visualisation.algemene_moteriek_dashboard import init_dashboard
-        app = init_dashboard(app) 
+        from visualisation.zijwaarts_springen_dashboard import init_vs_dashboard
+        app = init_dashboard(app)
+        app = init_vs_dashboard(app)
         return app
 
 app = init_app()

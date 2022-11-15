@@ -96,3 +96,10 @@ def request_algemene_moteriek():
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal)
         .where(Account.id == Han.club_code)
     ))
+
+
+def get_zijwaarts_springen():
+    return pd.DataFrame(session.execute(
+        select(Account.display_name, Han.club_code, Han.team_naam, Han.meting, Han.datum,
+              Han.Zijwaarts_springen_totaal)
+        .where(Account.id == Han.club_code)))
