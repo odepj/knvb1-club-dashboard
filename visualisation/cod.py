@@ -1,41 +1,14 @@
 from plotly.subplots import make_subplots
+import pandas as pd
+import plotly.graph_objects as go
+from plotly.utils import PlotlyJSONEncoder
+import json
 
 
 def change_of_direction(data):
-    import pandas as pd
-    import plotly.graph_objects as go
-    from plotly.utils import PlotlyJSONEncoder
-    import json
 
     df = pd.DataFrame(data)
-
-    data1_13 = df.query('team_naam =="Onder 13"')['CoD_links_1'].mean()
-    data2_13 = df.query('team_naam =="Onder 13"')['CoD_links_2'].mean()
-    data3_13 = df.query('team_naam =="Onder 13"')['CoD_links_beste'].mean()
-
-    data1_14 = df.query('team_naam =="Onder 14"')['CoD_links_1'].mean()
-    data2_14 = df.query('team_naam =="Onder 14"')['CoD_links_2'].mean()
-    data3_14 = df.query('team_naam =="Onder 14"')['CoD_links_beste'].mean()
-
-    data1_15 = df.query('team_naam =="Onder 15"')['CoD_links_1'].mean()
-    data2_15 = df.query('team_naam =="Onder 15"')['CoD_links_2'].mean()
-    data3_15 = df.query('team_naam =="Onder 15"')['CoD_links_beste'].mean()
-
-    data1_16 = df.query('team_naam =="Onder 16"')['CoD_links_1'].mean()
-    data2_16 = df.query('team_naam =="Onder 16"')['CoD_links_2'].mean()
-    data3_16 = df.query('team_naam =="Onder 16"')['CoD_links_beste'].mean()
-
-    data1_17 = df.query('team_naam =="Onder 17"')['CoD_links_1'].mean()
-    data2_17 = df.query('team_naam =="Onder 17"')['CoD_links_2'].mean()
-    data3_17 = df.query('team_naam =="Onder 17"')['CoD_links_beste'].mean()
-
-    mean_data = [["Onder 13", data1_13, data2_13, data3_13],
-                 ["Onder 14", data1_14, data2_14, data3_14],
-                 ["Onder 15", data1_15, data2_15, data3_15],
-                 ["Onder 16", data1_16, data2_16, data3_16],
-                 ["Onder 17", data1_17, data2_17, data3_17]]
-
-    mean_df = pd.DataFrame(mean_data, columns=["team_naam", "CoD_links_1", "CoD_links_2", "CoD_links_beste"])
+    mean_df = df.groupby("team_naam").mean(numeric_only=True).reset_index()
 
     fig = make_subplots(rows=3, cols=3, subplot_titles=
     ('Links 1', 'Links 2',
