@@ -124,7 +124,7 @@ def algemene_moteriek():
     if (bvo_id == None):
         return redirect('/login')
         
-    header = "Algemene Moteriek"
+    header = "Algemene Motoriek"
     template_location = 'dashboard/algemene_moteriek.html'
 
     return render_template(template_location, header=header)    
