@@ -59,20 +59,16 @@ def hand_oog_coordinatie():
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
 
-def evenwichtsbalk():
+def evenwichtsbalk_showcase():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
-
-    result = database.request_evenwichtsbalk(team_selection, bvo_id)
-    graphJSON = scatterplot.evenwichtsbalk(result)
+        
     header = "Evenwichtsbalk"
-    description = f"Resultaten van de evenwichtsbalk voor de groep {team_selection} jaar. "
-    template_location = 'dashboard/evenwichtsbalk.html'
+    template_location = 'dashboard/evenwichtsbalk_showcase_2.html'
 
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+    return render_template(template_location, header=header)   
 
 
 def zijwaarts_verplaatsen():
@@ -129,7 +125,7 @@ def algemene_moteriek():
     if (bvo_id == None):
         return redirect('/login')
         
-    header = "Algemene Moteriek"
+    header = "Algemene Motoriek"
     template_location = 'dashboard/algemene_moteriek.html'
 
     return render_template(template_location, header=header)    
