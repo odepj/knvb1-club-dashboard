@@ -83,8 +83,8 @@ def request_change_of_direction(team_name: str, club_code: str):
     # return \
     return session.execute(
         select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
-               Han.CoD_rechts_beste, Han.Staande_lengte, Han.club_code)
-        .where(Han.team_naam == team_name, Han.club_code == club_code)
+               Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.club_code)
+        .where(Han.club_code == club_code)
     )
 
 
