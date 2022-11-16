@@ -1,15 +1,34 @@
 import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
+
+from database.database import session
+
+
+def get_club_id():
+    try:
+        return session.get('id')
+    except:
+        return None
 
 
 def calculate_delta(value: pd.Series, from_, to_):
-    diff = value.pct_change(
-        periods=len(value) - 1)  # - pandas counterpart, but I feel the latter will become more useful.
+    # pandas counterpart, but I feel the latter will become more useful.
+    # diff = value.pct_change(periods=len(value) - 1)
     first = value.loc[from_][0]
     last = value.get(to_)[0]
-    d = abs(((first - last) / first) * 100)
-    return round(d, 1)
+    return round(abs(((first - last) / first) * 100), 1)
+
+
+def group_team_and_club(df: pd.DataFrame):
+    if df['club_code'].nunique() > 1:
+        club_code = 'mean'
+
+    else:
+        club_code = df['club_code'].drop_duplicates().values[0]
+
+    df_mean = df.groupby(['datum', 'meting']).mean(numeric_only=False)
+    df_mean['club_code'] = club_code
+    df_mean['meting'], df_mean.index = df_mean.index.droplevel(0), df_mean.index.droplevel(1)
+    return df_mean
 
 
 def add_figure_rangeslider(fig):
@@ -39,28 +58,4 @@ def add_figure_rangeslider(fig):
             ),
             type="date"
         )
-    )
-
-
-def line_figure_builder(df: pd.DataFrame, x: list, y: list, color: str):
-    # TODO: fix colours, fill area between lines if they're a pair
-    return go.Line(
-        df,
-        x=x,
-        y=y,
-        hue=color,
-        # markers=True,
-        # line_shape='spline'
-    )
-
-
-def indicator_builder(df, delta, name):
-    s = df[delta]
-    delta = calculate_delta(s, from_=s.iloc[:1].index, to_=s.iloc[-1:].index)
-    return go.Indicator(
-        mode='number+delta',
-        value=delta,
-        number={'suffix': " %"},
-        title={'text': f"<br><span style='font-size:0.7em;color:gray'>{name}</span>"},
-        # delta={'position': "bottom", 'reference': delta, 'relative': False}
     )
