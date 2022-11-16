@@ -38,13 +38,13 @@ def request_vertesprong(team_name: str, club_code: str):
 
 
 # request sprinten by team_name and bvo_id
-def request_sprinten(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `X10_meter_sprint_1`, `X10_meter_sprint_2`, `X10_meter_sprint_beste`, 
-        `X20_meter_sprint_1`, `X20_meter_sprint_2`, `X20_meter_sprint_beste`, 
-        `X30_meter_sprint_1`, `X30_meter_sprint_2`, `X30_meter_sprint_beste`,
-        `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
-
+def request_sprint(club_code: str):
+    return pd.DataFrame(session.execute(
+        select(Han.speler_code, Han.X10_meter_sprint_beste, 
+            Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
+            Han.team_naam)
+        .where(Han.club_code == club_code)
+    ))
 
 # request handoogcoordinatie by team_name and bvo_id
 def request_hand_oog_coordinatie(club_code: str):

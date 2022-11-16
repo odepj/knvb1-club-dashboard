@@ -45,8 +45,8 @@ def vertesprong():
 
 
 @app.route('/dashboard/sprint', methods=['GET', 'POST'])
-def sprinten():
-    return render_templates.sprinten()
+def sprint():
+    return render_templates.sprint()
 
 
 @app.route('/dashboard/zijwaartsspringen', methods=['GET', 'POST'])
