@@ -1,5 +1,5 @@
 from flask import render_template, request, session, redirect
-from visualisation import scatterplot
+from visualisation import scatterplot, cod
 from visualisation import handcorplot
 from database import database
 
@@ -114,9 +114,9 @@ def change_of_direction():
         return redirect('/login')
 
     result = database.request_change_of_direction(team_selection, bvo_id)
-    graphJSON = scatterplot.change_of_direction(result)
+    graphJSON = cod.change_of_direction(result)
     header = "CoD Scores per been"
-    description = f"Resultaten van de CoD voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de CoD voor alle teams. "
     template_location = 'dashboard/cod.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
