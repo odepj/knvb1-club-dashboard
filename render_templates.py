@@ -89,18 +89,14 @@ def zijwaarts_verplaatsen():
 
 def zijwaarts_springen():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
-    result = database.request_zijwaarts_springen(team_selection, bvo_id)
-    graphJSON = scatterplot.zijwaarts_springen(result)
-    header = "Zijwaartse sprong"
-    description = f"Resultaten van de zijwaarste sprong voor de groep {team_selection} jaar. "
+    header = "Zijwaarts Springen"
     template_location = 'dashboard/zijwaartsspringen.html'
 
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+    return render_template(template_location, header=header)
 
 
 def change_of_direction():
@@ -124,8 +120,8 @@ def algemene_moteriek():
 
     if (bvo_id == None):
         return redirect('/login')
-        
-    header = "Algemene Motoriek"
+
+    header = "Algemene Moteriek"
     template_location = 'dashboard/algemene_moteriek.html'
 
-    return render_template(template_location, header=header)    
+    return render_template(template_location, header=header)
