@@ -92,6 +92,8 @@ def init_callbacks(dash_app):
 
         return [
             html.H5('Delta verbetering', style={'margin-top': '5px'}),
+            html.Span(f'Van - tot:'),
+            html.Em(f"2013-10-05 - 2018-04-05"),  # Komt later wel, brein is kaduuk
             html.Span(f'Team {club_id}:'),
             html.Em(f"{delta_f}%"),
             html.Span('Landelijk gemiddelde:'),
