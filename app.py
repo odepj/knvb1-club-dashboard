@@ -1,3 +1,4 @@
+import flask
 from flask import Flask, render_template
 from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
 import render_templates
@@ -65,12 +66,13 @@ def hand_oog_coordinatie():
 
 @app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
 def evenwichtsbalk():
-    return None
-
-
-@app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
-def evenwichtsbalk_showcase():
     return render_templates.evenwichtsbalk_showcase()
+    # return flask.Response("<h1 style='padding: 50vh 0vh 0vh 55vh;'>Deze pagina wordt verbouwd!</h1>", status=419)
+
+
+# @app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
+# def evenwichtsbalk_showcase():
+#     return render_templates.evenwichtsbalk_showcase()
 
 
 @app.route('/dashboard/zijwaartsverplaatsen', methods=['GET', 'POST'])
