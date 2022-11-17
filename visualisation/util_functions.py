@@ -1,13 +1,8 @@
+from datetime import datetime
+
 import pandas as pd
 
 from database.database import session
-
-
-def get_club_id():
-    try:
-        return session.get('id')
-    except:
-        return None
 
 
 def calculate_delta(value: pd.Series, from_, to_):
@@ -18,10 +13,9 @@ def calculate_delta(value: pd.Series, from_, to_):
     return round(abs(((first - last) / first) * 100), 1)
 
 
-def group_team_and_club(df: pd.DataFrame):
+def calculate_mean_result_by_date(df: pd.DataFrame):
     if df['club_code'].nunique() > 1:
         club_code = 'mean'
-
     else:
         club_code = df['club_code'].drop_duplicates().values[0]
 
