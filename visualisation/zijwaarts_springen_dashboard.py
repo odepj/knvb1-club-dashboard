@@ -79,7 +79,7 @@ def init_callbacks(dash_app):
             delta_f = calculate_delta(f, from_=df_left.iloc[-1:].index, to_=df_right.iloc[-1:].index)
             return [
                 html.H5('Delta verbetering', style={'margin-top': '5px'}),
-                html.Span(f'Team {club_id}:'),
+                html.Span(f'Van - tot:'),
                 html.Em(f"{x_left} - {x_right}"),
                 html.Span(f'Team {club_id}:'),
                 html.Em(f"{delta_f}%"),
