@@ -38,29 +38,30 @@ def request_vertesprong(team_name: str, club_code: str):
 
 
 # request sprinten by team_name and bvo_id
-def request_sprinten(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `X10_meter_sprint_1`, `X10_meter_sprint_2`, `X10_meter_sprint_beste`, 
-        `X20_meter_sprint_1`, `X20_meter_sprint_2`, `X20_meter_sprint_beste`, 
-        `X30_meter_sprint_1`, `X30_meter_sprint_2`, `X30_meter_sprint_beste`,
-        `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
-
+def request_sprint(club_code: str):
+    return pd.DataFrame(session.execute(
+        select(Han.speler_code, Han.X10_meter_sprint_beste, 
+            Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
+            Han.team_naam)
+        .where(Han.club_code == club_code)
+    ))
 
 # request handoogcoordinatie by team_name and bvo_id
 def request_hand_oog_coordinatie(club_code: str):
     return pd.DataFrame(session.execute(
-        select(Han.speler_code, Han.Oog_hand_coordinatie_totaal, 
-            Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
-            Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
+        select(Han.speler_code, Han.Oog_hand_coordinatie_totaal,
+               Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
+               Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
         .where(Han.club_code == club_code)
     ))
 
 
 # request evenwichtsbalk by team_name and bvo_id
-def request_evenwichtsbalk(team_name: str, club_code: str):
-    query = f"""SELECT `id`, `Balance_Beam_6cm`, `Balance_Beam_4_5cm`, `Balance_Beam_3cm`, `Balance_beam_totaal`,
-    `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
+def request_evenwichtsbalk():
+    return pd.DataFrame(session.execute(
+        select(Han.id, Han.club_code, Account.display_name, Han.team_naam, Han.meting, Han.datum,
+               Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal)
+        .where(Account.id == Han.club_code)))
 
 
 # request zijwaarts verplaatsen by team_name and bvo_id
@@ -82,8 +83,8 @@ def request_change_of_direction(team_name: str, club_code: str):
     # return \
     return session.execute(
         select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
-               Han.CoD_rechts_beste, Han.Staande_lengte, Han.club_code)
-        .where(Han.team_naam == team_name, Han.club_code == club_code)
+               Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.club_code)
+        .where(Han.club_code == club_code)
     )
 
 
