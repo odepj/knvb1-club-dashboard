@@ -1,3 +1,5 @@
+from datetime import datetime
+
 import dash
 import pandas as pd
 from dash import html, dcc, Input, Output
@@ -6,11 +8,14 @@ import plotly.graph_objects as go
 from flask import session
 
 from database.database import get_zijwaarts_springen
-from visualisation.util_functions import add_figure_rangeslider, calculate_delta, calculate_mean_result_by_date
+from visualisation.util_functions import add_figure_rangeslider, calculate_delta, calculate_mean_result_by_date, nearest
 
 # Retrieve data from DB.
 data = get_zijwaarts_springen()
 col = 'Zijwaarts_springen_totaal'
+date_range = data['datum'].drop_duplicates().values
+
+
 # col = ['Zijwaarts_springen_1', 'Zijwaarts_springen_2','Zijwaarts_springen_totaal']
 
 
@@ -23,7 +28,12 @@ def init_vs_dashboard(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-    dash_app.layout = html.Main(id='graph-container')
+    dash_app.layout = html.Main(
+        dbc.Row([
+            dbc.Col(id='graph-container', width=10,
+                    children=[dcc.Graph(id='zijwaarts-springen-graph', responsive=True)]),
+            dbc.Card(id='indicator', className='col-2')
+        ]))
 
     # Callbacks for the Dash dashboard are initialized here after the creation of the layout has been completed
     init_callbacks(dash_app)
@@ -33,7 +43,7 @@ def init_vs_dashboard(server):
 
 # This method is used to create and initialize callbacks that will be used by the charts or selection items
 def init_callbacks(dash_app):
-    @dash_app.callback(Output("graph-container", "children"), Input("graph-container", "loading_state"))
+    @dash_app.callback(Output("zijwaarts-springen-graph", "figure"), Input("graph-container", "loading_state"))
     def build_graph(loading_state):
         print('loading_state:', loading_state)
         club_id = session.get("id")
@@ -47,53 +57,43 @@ def init_callbacks(dash_app):
         fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Datum',
                           legend_title="Teams", title_x=0.5)
         fig = add_figure_rangeslider(fig)
-
-        graph = dbc.Col(
-            id='graph-container', width=10,
-            children=[
-                dcc.Graph(id='zijwaarts-springen-graph', figure=fig, responsive=True)
-            ]
-        )
-
-        s, f = mean[col], club[col]
-        delta_s = calculate_delta(s, from_=s.iloc[:1].index, to_=s.iloc[-1:].index)
-        delta_f = calculate_delta(f, from_=f.iloc[:1].index, to_=f.iloc[-1:].index)
-        card = dbc.Card(
-            [
-                html.H5('Delta verbetering', style={'margin-top': '5px'}),
-                html.Span(f'Team {club_id}:'),
-                html.Em(f"{delta_f}%"),
-                html.Span('Landelijk gemiddelde:'),
-                html.Em(f"{delta_s}%"),
-            ], className='col-2', id='indicator'
-        )
-
-        return dbc.Row([graph, card])
+        return fig
 
     @dash_app.callback(Output("indicator", "children"),
                        [Input("zijwaarts-springen-graph", "selectedData"),
                         Input("zijwaarts-springen-graph", "relayoutData")]
                        )
     def update_graph(selectedData, relayoutData):
-        print('relayoutData:', relayoutData)
-        print('selectedData:', selectedData)
-        # print('graph_selection:', graph_selection)
-        # print('selectedData:', selectedData)
+        # selectedData['range']['x']
+        club_id = session.get("id")
 
-        slider_range = None
-        if relayoutData is not None:
-            if 'xaxis.range' in relayoutData:
-                slider_range = relayoutData['xaxis.range']
-                print(slider_range)
+        mean = calculate_mean_result_by_date(data.drop_duplicates())
+        club = calculate_mean_result_by_date(data[data['club_code'] == club_id].drop_duplicates())
+        s, f = mean[col], club[col]
 
-        graph_range = selectedData
-        if selectedData is not None:
-            if 'range' in selectedData is not None:
-                graph_range = selectedData['range']['x']
-                print(graph_range)
+        if relayoutData is not None and 'xaxis.range' in relayoutData:
+            x_left, x_right = [nearest(date_range, datetime.strptime(entry.split(' ')[0], '%Y-%m-%d').date()) for entry
+                               in relayoutData['xaxis.range']]
+            df_left, df_right = pd.DataFrame([], index=[x_left]), pd.DataFrame([], index=[x_right])
+            delta_s = calculate_delta(s, from_=df_left.iloc[-1:].index, to_=df_right.iloc[-1:].index)
+            delta_f = calculate_delta(f, from_=df_left.iloc[-1:].index, to_=df_right.iloc[-1:].index)
+            return [
+                html.H5('Delta verbetering', style={'margin-top': '5px'}),
+                html.Span(f'Team {club_id}:'),
+                html.Em(f"{x_left} - {x_right}"),
+                html.Span(f'Team {club_id}:'),
+                html.Em(f"{delta_f}%"),
+                html.Span('Landelijk gemiddelde:'),
+                html.Em(f"{delta_s}%"),
+            ]
+
+        delta_s = calculate_delta(s, from_=s.iloc[:1].index, to_=s.iloc[-1:].index)
+        delta_f = calculate_delta(f, from_=f.iloc[:1].index, to_=f.iloc[-1:].index)
+
         return [
-            html.H5('slider_range:', style={'margin-top': '5px'}),
-            html.Em(f"{slider_range}%"),
-            html.Span('graph_selection:'),
-            html.Em(f"{graph_range}%"),
+            html.H5('Delta verbetering', style={'margin-top': '5px'}),
+            html.Span(f'Team {club_id}:'),
+            html.Em(f"{delta_f}%"),
+            html.Span('Landelijk gemiddelde:'),
+            html.Em(f"{delta_s}%"),
         ]
