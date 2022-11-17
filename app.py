@@ -6,9 +6,11 @@ def init_app():
     app = Flask(__name__)
 
     with app.app_context():
-        from visualisation.algemene_moteriek_dashboard import init_dashboard
+        from visualisation.algemene_moteriek_dashboard import init_algemene_moteriek_dashboard
+        from visualisation.evenwichtsbalk_dashboard import init_evenwichtsbalk_dashboard
         from visualisation.zijwaarts_springen_dashboard import init_vs_dashboard
-        app = init_dashboard(app)
+        app = init_algemene_moteriek_dashboard(app)
+        app = init_evenwichtsbalk_dashboard(app)
         app = init_vs_dashboard(app)
         return app
 
@@ -47,8 +49,8 @@ def vertesprong():
 
 
 @app.route('/dashboard/sprint', methods=['GET', 'POST'])
-def sprinten():
-    return render_templates.sprinten()
+def sprint():
+    return render_templates.sprint()
 
 
 @app.route('/dashboard/zijwaartsspringen', methods=['GET', 'POST'])
@@ -63,7 +65,12 @@ def hand_oog_coordinatie():
 
 @app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
 def evenwichtsbalk():
-    return render_templates.evenwichtsbalk()
+    return None
+
+
+@app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
+def evenwichtsbalk_showcase():
+    return render_templates.evenwichtsbalk_showcase()
 
 
 @app.route('/dashboard/zijwaartsverplaatsen', methods=['GET', 'POST'])
