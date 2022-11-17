@@ -13,6 +13,10 @@ def calculate_delta(value: pd.Series, from_, to_):
     return round(abs(((first - last) / first) * 100), 1)
 
 
+def nearest(items, pivot):
+    return min(items, key=lambda x: abs(x - pivot))
+
+
 def calculate_mean_result_by_date(df: pd.DataFrame):
     if df['club_code'].nunique() > 1:
         club_code = 'mean'
