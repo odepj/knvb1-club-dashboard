@@ -5,6 +5,8 @@ from database import session_factory, engine
 from database.models import Account, Han
 
 
+session = session_factory()
+
 def execute_query(query: str) -> CursorResult:
     return engine.execute(query)
 
@@ -57,6 +59,13 @@ def request_evenwichtsbalk(team_name: str, club_code: str):
         select(Han.id,  Han.Balance_Beam_6cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_3cm, Han.Balance_beam_totaal,
     Han.Staande_lengte, Han.club_code)
     .where(Han.team_naam == team_name, Han.club_code == club_code)
+    )
+
+
+def request_evenwichtsbalk_sc_2():
+    return pd.DataFrame(session.execute(
+        select(Han.speler_code, Han.club_code, Han.Balance_Beam_6cm, Han.Balance_Beam_4_5cm, 
+        Han.Balance_Beam_3cm, Han.Balance_beam_totaal, Han.meting, Han.team_naam))
     )
 
 

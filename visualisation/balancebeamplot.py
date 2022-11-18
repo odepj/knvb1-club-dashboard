@@ -1,23 +1,8 @@
-import pandas as pd
-from dash import Dash, dcc, html, Input, Output
 import plotly.graph_objects as go
-import plotly.express as px
-import pymysql
 from regex import F
-from sqlalchemy import create_engine
+from database.database import request_evenwichtsbalk_sc_2
 
-#oege database connectie
-connect_args={'ssl':{'fake_flag_to_enable_tls': True}}
-connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format('tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
-connector = create_engine(connect_string,connect_args=connect_args) 
-
-#Tabellen ophalen uit SQL
-sql_a = pd.read_sql(
-    "SELECT speler_code, club_code, Balance_Beam_6cm, Balance_Beam_4_5cm, Balance_Beam_3cm, Balance_beam_totaal, meting,  team_naam FROM `han`",
-    con=connector,
-)
-
-df = sql_a
+df = request_evenwichtsbalk_sc_2()
 
 fig = go.Figure()
 #grafiek evenwichtsbalk gekozen team 3cm boxplot
