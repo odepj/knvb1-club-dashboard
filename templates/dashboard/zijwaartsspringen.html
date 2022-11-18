@@ -13,72 +13,17 @@
                 <span>{{ session.displayname }}</span>
             </div>
             <br>
-            <div class="teamscontainer">
-                <form action="{{ url_for('zijwaarts_springen') }}" method="post">
-                <ul class="teams">
-                    <li>
-                        <input type='radio' value='"Onder 13"' name='teamSelectie' id='onder13'/>
-                        <label for='onder13'>Onder 13</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 14"' name='teamSelectie' id='onder14'/>
-                        <label for='onder14'>Onder 14</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 15"' name='teamSelectie' id='radio3'/>
-                        <label for='radio3'>Onder 15</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 16"' name='teamSelectie'  id='radio4'/>
-                        <label for='radio4'>Onder 16</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 17"' name='teamSelectie'  id='radio5'/>
-                        <label for='radio5'>Onder 17</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 18"' name='teamSelectie'  id='radio6'/>
-                        <label for='radio6'>Onder 18</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 19"' name='teamSelectie'  id='radio8'/>
-                        <label for='radio8'>Onder 19</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 20"' name='teamSelectie'  id='radio9'/>
-                        <label for='radio9'>Onder 20</label>
-                    </li>
-                    <li>
-                        <input type='radio' value='"Onder 21"' name='teamSelectie'  id='radio10'/>
-                        <label for='radio10'>Onder 21</label>
-                    </li>
-                    <button class="submitage" type="submit">Selecteer groep</button>
-                </ul>
-                </form>
+            <div class="loguit" style="position:absolute; bottom: 0; width: 100%;">
+                <a href="/logout"><span>Uitloggen</span></a>
             </div>
-        </header>
-        <div class="loguit">
-            <a href="/logout"><span>Uitloggen</span></a>
-        </div>
     </nav>
 </div>
-
 <div class="dashboard">
     <div class="flexcontainer">
         <a class="backarrow" href="/dashboard"><img src="/static/images/arrowleft.svg"></a>
         <h1 class="statistieken">{{ header }}</h1>
-        <p>{{ description }}</p>
-        <div class="chartcontainer">
-            <div id="chart" class="chart"></div>
-        </div>
-        </div>
+        <span class="bi bi-arrow-left-circle"></span>
+        <iframe src="/dashboard/dash/zijwaartsspringen/" class="w-100 vh-100"></iframe>
     </div>
 </div>
-<script>
-     $('input[type=radio]').on('change', function() {
-         $('button[type=submit]').click();})
-
-    var graphs = {{ graphJSON | safe}}
-    Plotly.plot('chart', graphs, {});
-</script>
 {% endblock %}

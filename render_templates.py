@@ -1,8 +1,9 @@
 from flask import render_template, request, session, redirect
-from visualisation import scatterplot
 from visualisation import balancebeamplot
+from visualisation import scatterplot, cod
+from visualisation import handcorplot
+from visualisation import sprintplot
 from database import database
-
 
 def get_bvo_id():
     return session.get('id')
@@ -28,17 +29,16 @@ def vertesprong():
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
 
 
-def sprinten():
+def sprint():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
 
-    result = database.request_sprinten(team_selection, bvo_id)
-    graphJSON = scatterplot.sprinten(result)
+    result = database.request_sprint(bvo_id)
+    graphJSON = sprintplot.sprint(result)
     header = "Sprint per afstand"
-    description = f"Resultaten van de sprint voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de 10,20 en 30 meter sprint . "
     template_location = 'dashboard/sprint.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
@@ -46,15 +46,14 @@ def sprinten():
 
 def hand_oog_coordinatie():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
     if (bvo_id == None):
         return redirect('/login')
 
-    result = database.request_hand_oog_coordinatie(team_selection, bvo_id)
-    graphJSON = scatterplot.hand_oog_coordinatie(result)
+    result = database.request_hand_oog_coordinatie(bvo_id)
+    graphJSON = handcorplot.hand_oog_coordinatie(result)
     header = "Hand-Oog Coordinatie"
-    description = f"Resultaten van de hand-oog coordinatie voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de hand-oog coordinatie"
     template_location = 'dashboard/handoogcoordinatie.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
@@ -62,18 +61,28 @@ def hand_oog_coordinatie():
 
 def evenwichtsbalk():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
+
+    if (bvo_id == None):
+        return redirect('/login')
+        
+    header = "Evenwichtsbalk"
+    template_location = 'dashboard/evenwichtsbalk_showcase_2.html'
+
+    return render_template(template_location, header=header)   
+
+
+def evenwichtsbalk_showcase():
+    bvo_id = get_bvo_id()
 
     if (bvo_id == None):
         return redirect('/login')
 
-    result = database.request_evenwichtsbalk(team_selection, bvo_id)
-    graphJSON = balancebeamplot(result)
+    result = database.request_evenwichtsbalk_sc_2()
+    graphJSON = balancebeamplot.evenwichtsbalk_sc(result)
     header = "Evenwichtsbalk"
-    description = f"Resultaten van de evenwichtsbalk voor de groep {team_selection} jaar. "
     template_location = 'dashboard/evenwichtsbalk.html'
 
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+    return render_template(template_location, graphJSON=graphJSON, header=header)
 
 
 def zijwaarts_verplaatsen():
@@ -94,18 +103,14 @@ def zijwaarts_verplaatsen():
 
 def zijwaarts_springen():
     bvo_id = get_bvo_id()
-    team_selection = get_team_selection()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
-    result = database.request_zijwaarts_springen(team_selection, bvo_id)
-    graphJSON = scatterplot.zijwaarts_springen(result)
-    header = "Zijwaartse sprong"
-    description = f"Resultaten van de zijwaarste sprong voor de groep {team_selection} jaar. "
+    header = "Zijwaarts Springen"
     template_location = 'dashboard/zijwaartsspringen.html'
 
-    return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+    return render_template(template_location, header=header)
 
 
 def change_of_direction():
@@ -116,9 +121,21 @@ def change_of_direction():
         return redirect('/login')
 
     result = database.request_change_of_direction(team_selection, bvo_id)
-    graphJSON = scatterplot.change_of_direction(result)
+    graphJSON = cod.change_of_direction(result)
     header = "CoD Scores per been"
-    description = f"Resultaten van de CoD voor de groep {team_selection} jaar. "
+    description = f"Resultaten van de CoD voor alle teams. "
     template_location = 'dashboard/cod.html'
 
     return render_template(template_location, graphJSON=graphJSON, header=header, description=description)
+
+
+def algemene_moteriek():
+    bvo_id = get_bvo_id()
+
+    if (bvo_id == None):
+        return redirect('/login')
+
+    header = "Algemene Moteriek"
+    template_location = 'dashboard/algemene_moteriek.html'
+
+    return render_template(template_location, header=header)

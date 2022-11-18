@@ -1,15 +1,32 @@
+import flask
 from flask import Flask, render_template
-from authentication.authentication import authenticate_dashboard, handle_logout, handle_login
+from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
 import render_templates
 
+def init_app():
+    app = Flask(__name__)
 
-app = Flask(__name__)
+    with app.app_context():
+        from visualisation.algemene_moteriek_dashboard import init_algemene_moteriek_dashboard
+        from visualisation.evenwichtsbalk_dashboard import init_evenwichtsbalk_dashboard
+        from visualisation.zijwaarts_springen_dashboard import init_vs_dashboard
+        app = init_algemene_moteriek_dashboard(app)
+        app = init_evenwichtsbalk_dashboard(app)
+        app = init_vs_dashboard(app)
+        return app
+
+app = init_app()
 app.secret_key = 'databaseproject'
 
 
 @app.route('/')
 def intro():
     return render_template('intro.html')
+
+
+@app.route('/request', methods=['GET', 'POST'])
+def request():
+    return handle_request()
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -33,8 +50,8 @@ def vertesprong():
 
 
 @app.route('/dashboard/sprint', methods=['GET', 'POST'])
-def sprinten():
-    return render_templates.sprinten()
+def sprint():
+    return render_templates.sprint()
 
 
 @app.route('/dashboard/zijwaartsspringen', methods=['GET', 'POST'])
@@ -49,6 +66,12 @@ def hand_oog_coordinatie():
 
 @app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
 def evenwichtsbalk():
+    return render_templates.evenwichtsbalk_showcase()
+    # return flask.Response("<h1 style='padding: 50vh 0vh 0vh 55vh;'>Deze pagina wordt verbouwd!</h1>", status=419)
+
+
+@app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
+def evenwichtsbalk_showcase():
     return render_templates.evenwichtsbalk()
 
 
@@ -60,6 +83,11 @@ def zijwaarts_verplaatsen():
 @app.route('/dashboard/cod', methods=['GET', 'POST'])
 def change_of_direction():
     return render_templates.change_of_direction()
+
+
+@app.route('/dashboard/algemene_moteriek', methods=['GET', 'POST'])
+def algemene_moteriek():
+    return render_templates.algemene_moteriek()
 
 
 if __name__ == "__main__":
