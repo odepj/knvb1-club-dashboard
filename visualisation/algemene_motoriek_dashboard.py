@@ -4,12 +4,12 @@ import dash_bootstrap_components as dbc
 import plotly.express as px
 import pandas as pd
 from flask import session
-from database.database import request_algemene_moteriek
+from database.database import request_algemene_motoriek
 import numpy
 from functools import reduce
 
-# Get all the neccessary data algemene moteriek data from the database
-result = request_algemene_moteriek()
+# Get all the neccessary data algemene motoriek data from the database
+result = request_algemene_motoriek()
 
 # This dictionary will be used to lookup BLOC-test specific rows
 columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
@@ -62,10 +62,10 @@ def get_filtered_median(teams, tests, measurements):
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
 # This workaround allows us to use Dash inside a Flask app by using its own route
-def init_algemene_moteriek_dashboard(server):
+def init_algemene_motoriek_dashboard(server):
     dash_app = dash.Dash(
         server=server,
-        routes_pathname_prefix='/dashboard/dash/moteriek_dashboard/',
+        routes_pathname_prefix='/dashboard/dash/motoriek_dashboard/',
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
@@ -118,11 +118,11 @@ def init_algemene_moteriek_dashboard(server):
     # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
     dash_app.layout = dbc.Container(
         [
-            # Controls variable items and algemene_moteriek-graph are initialised below
+            # Controls variable items and algemene_motoriek-graph are initialised below
             dbc.Row(
                 [
                     dbc.Col(controls, md=4),
-                    dbc.Col(dcc.Graph(id="algemene_moteriek-graph"), md=8),
+                    dbc.Col(dcc.Graph(id="algemene_motoriek-graph"), md=8),
                 ],
                 align="center",
             ),
@@ -132,7 +132,7 @@ def init_algemene_moteriek_dashboard(server):
                 html.H5("Medianen van BLOC-test score per team voor alle clubs (punten)",
                         style={"text-align": "center"}),
                 dash_table.DataTable(
-                    id='algemene_moteriek_data_table', style_table={'overflowY': 'scroll'}, style_data={
+                    id='algemene_motoriek_data_table', style_table={'overflowY': 'scroll'}, style_data={
                         'color': 'black',
                         'backgroundColor': 'white'
                     },
@@ -158,9 +158,9 @@ def init_algemene_moteriek_dashboard(server):
 
 # This method is used to create and initialize callbacks that will be used by the charts or selection items
 def init_callbacks(dash_app):
-    # This callback is used to dynamically generate the algemene_moteriek-graph
+    # This callback is used to dynamically generate the algemene_motoriek-graph
     @dash_app.callback(
-        Output("algemene_moteriek-graph", "figure"),
+        Output("algemene_motoriek-graph", "figure"),
         [
             Input("teams", "value"),
             Input("tests", "value"),
@@ -206,9 +206,9 @@ def init_callbacks(dash_app):
 
         return fig
 
-    # This callback is used to dynamically generate the algemene_moteriek_data_table
-    @dash_app.callback(Output('algemene_moteriek_data_table', 'data'),
-                       Output('algemene_moteriek_data_table', 'columns'),
+    # This callback is used to dynamically generate the algemene_motoriek_data_table
+    @dash_app.callback(Output('algemene_motoriek_data_table', 'data'),
+                       Output('algemene_motoriek_data_table', 'columns'),
                        [Input("teams", "value"),
                         Input("tests", "value"),
                         Input("measurements", "value")])

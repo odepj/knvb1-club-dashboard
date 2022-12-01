@@ -7,12 +7,8 @@ def init_app():
     app = Flask(__name__)
 
     with app.app_context():
-        from visualisation.algemene_moteriek_dashboard import init_algemene_moteriek_dashboard
-        from visualisation.evenwichtsbalk_dashboard import init_evenwichtsbalk_dashboard
-        from visualisation.zijwaarts_springen_dashboard import init_vs_dashboard
-        app = init_algemene_moteriek_dashboard(app)
-        app = init_evenwichtsbalk_dashboard(app)
-        app = init_vs_dashboard(app)
+        from visualisation.dashboard_template import init_dashboard_template
+        app = init_dashboard_template(app)
         return app
 
 app = init_app()
@@ -66,12 +62,6 @@ def hand_oog_coordinatie():
 
 @app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
 def evenwichtsbalk():
-    return render_templates.evenwichtsbalk_showcase()
-    # return flask.Response("<h1 style='padding: 50vh 0vh 0vh 55vh;'>Deze pagina wordt verbouwd!</h1>", status=419)
-
-
-@app.route('/dashboard/evenwichtsbalk_showcase_2', methods=['GET', 'POST'])
-def evenwichtsbalk_showcase():
     return render_templates.evenwichtsbalk()
 
 
@@ -85,9 +75,9 @@ def change_of_direction():
     return render_templates.change_of_direction()
 
 
-@app.route('/dashboard/algemene_moteriek', methods=['GET', 'POST'])
-def algemene_moteriek():
-    return render_templates.algemene_moteriek()
+@app.route('/dashboard/algemene_motoriek', methods=['GET', 'POST'])
+def algemene_motoriek():
+    return render_templates.algemene_motoriek()
 
 
 if __name__ == "__main__":
