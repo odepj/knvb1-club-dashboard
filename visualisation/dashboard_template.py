@@ -40,5 +40,5 @@ def init_callbacks(dash_app):
     @dash_app.callback(
     Output('selected_dashboard', 'children'),
     [Input('url', 'pathname')])
-    def callback_func(pathname):
+    def get_selected_dashboard(pathname):
         return re.sub(r'^.+/([^/]+)$', r'\1', pathname)

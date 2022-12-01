@@ -50,26 +50,6 @@ def sprint():
     return render_templates.sprint()
 
 
-@app.route('/dashboard/zijwaartsspringen', methods=['GET', 'POST'])
-def zijwaarts_springen():
-    return render_templates.zijwaarts_springen()
-
-
-@app.route('/dashboard/handoogcoordinatie', methods=['GET', 'POST'])
-def hand_oog_coordinatie():
-    return render_templates.hand_oog_coordinatie()
-
-
-@app.route('/dashboard/evenwichtsbalk', methods=['GET', 'POST'])
-def evenwichtsbalk():
-    return render_templates.evenwichtsbalk()
-
-
-@app.route('/dashboard/zijwaartsverplaatsen', methods=['GET', 'POST'])
-def zijwaarts_verplaatsen():
-    return render_templates.zijwaarts_verplaatsen()
-
-
 @app.route('/dashboard/cod', methods=['GET', 'POST'])
 def change_of_direction():
     return render_templates.change_of_direction()

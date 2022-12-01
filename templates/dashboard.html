@@ -30,18 +30,6 @@
                     <div class="statistiek sprint">
                         <a href="/dashboard/sprint"><span>Sprint</span></a>
                     </div>
-                    <div class="statistiek zijwaartsspringen">
-                        <a href="/dashboard/zijwaartsspringen"><span>Zijwaarts <br>Springen</span></a>
-                    </div>
-                    <div class="statistiek handoogcoord">
-                        <a href="/dashboard/handoogcoordinatie"><span>Hand-oog <br>coordinatie</span></a>
-                    </div>
-                    <div class="statistiek evenwichtsbalk">
-                        <a href="/dashboard/evenwichtsbalk"><span>Evenwichtsbalk</span></a>
-                    </div>
-                    <div class="statistiek zijwaartsverplaatsen">
-                        <a href="/dashboard/zijwaartsverplaatsen"><span>Zijwaarts <br>Verplaatsen</span></a>
-                    </div>
                     <div class="statistiek cod">
                         <a href="/dashboard/cod"><span>CoD</span></a>
                     </div>
@@ -53,15 +41,4 @@
         </div>
     </div>
 </div>
-<script>
-    const selectElement = document.querySelector('#voetbalklasse');
-    selectElement.addEventListener('change', (event) => {
-        const result = document.querySelector('#team1');
-        const result2 = document.querySelector('#team2');
-        const result3 = document.querySelector('#team3');
-        result.textContent = `${event.target.value}`;
-        result2.textContent = `${event.target.value}`;
-        result3.textContent = `${event.target.value}`;
-    });
-</script>
 {% endblock %}
