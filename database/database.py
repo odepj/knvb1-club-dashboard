@@ -31,10 +31,10 @@ def store_account(id: str, username: str, password, email: str, club: str):
 
 
 # request vertesprong by team_name and bvo_id
-def request_vertesprong(team_name: str, club_code: str):
+def request_vertesprong(club_code: str):
     query = f"""SELECT `id`, `Vertesprong_1`, `Vertesprong_2`, `Vertesprong_beste`, 
-        `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
-    return execute_query(query)
+        `Staande_lengte`, `club_code` FROM `han` WHERE `club_code` = '{club_code}'"""
+    return pd.DataFrame(execute_query(query))
 
 
 # request sprinten by team_name and bvo_id
@@ -78,30 +78,30 @@ def request_evenwichtsbalk_sc_2():
 
 
 # request zijwaarts springen by team_name and bvo_id
-def request_zijwaarts_springen(team_name: str, club_code: str):
+def request_zijwaarts_springen(club_code: str):
     query = f"""SELECT `id`, `Zijwaarts_springen_1`, `Zijwaarts_springen_2`, `Zijwaarts_springen_totaal`, 
-        `Staande_lengte`, `club_code` FROM `han` WHERE `team_naam` = '{team_name}' AND `club_code` = '{club_code}'"""
+        `Staande_lengte`, `club_code` FROM `han`  WHERE `club_code` = '{club_code}'"""
     return execute_query(query)
 
 
 # request change of direction by team_name and bvo_id
-def request_change_of_direction(team_name: str, club_code: str):
+def request_change_of_direction(club_code: str):
     # return \
-    return session.execute(
+    return pd.DataFrame(session.execute(
         select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
                Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.club_code)
-        .where(Han.club_code == club_code)
+        .where(Han.club_code == club_code))
     )
 
 
-def request_algemene_motoriek():
+def request_algemene_motoriek(club_code: str):
     return pd.DataFrame(session.execute(
         select(Han.id, Account.display_name, Han.club_code, Han.team_naam, Han.meting,
                Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal)
-        .where(Account.id == Han.club_code)
+        .where(Account.id == Han.club_code and Han.club_code == club_code)
     ))
 
 
