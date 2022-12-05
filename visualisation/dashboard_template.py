@@ -57,10 +57,10 @@ def init_dashboard_template(server):
             [dbc.Checklist(
                 id="statistics",
                 options=[
-                    {"label": "Gemiddelde", "value": 1},
-                    {"label": "Mediaan", "value": 2},
-                    {"label": "Boxplot", "value": 3},
-                    {"label": "Individuen", "value": 4},
+                    {"label": "Gemiddelde", "value": 0},
+                    {"label": "Mediaan", "value": 1},
+                    {"label": "Boxplot", "value": 2},
+                    {"label": "Individuen", "value": 3},
                 ],
 
                 label_checked_style={"color": "green"},
@@ -99,8 +99,8 @@ def init_dashboard_template(server):
 
             dbc.Row(
                 [
-                    dbc.Col([filters, statistics, benchmark],
-                            width=2, style={"height": "20vh"}),
+                    dbc.Col([html.Div(id="bloc_test_selection"), filters, statistics, benchmark],
+                            width=2, style={"height": "10rem"}),
                     dbc.Col(dcc.Graph(id="boxplot", responsive=True), width=10),
                 ],
                 class_name="align-items-stretch"),
@@ -145,6 +145,42 @@ def init_callbacks(dash_app):
             return request_algemene_motoriek(bvo_id).to_dict(orient='records')
         else:
             return dict()
+
+
+    # This callback is used to dynamically return the blok test selection menu
+    @dash_app.callback(
+        Output('bloc_test_selection', 'children'),
+        [Input('selected_dashboard', 'children')])
+    def bloc_test_selection(selected_dashboard):
+        if selected_dashboard != "algemene_motoriek":
+            return None
+
+        return dbc.Card([
+            dbc.CardHeader("BLOC-testen", class_name="text-center fw-bold",
+                           style={"background-color": "#FF9900"}),
+            dbc.CardBody(
+                [dbc.Checklist(
+                    id="bloc_test_selection",
+                    options=[
+                        {"label": "Evenwichtsbalk",
+                            "value": "Balance_beam_totaal"},
+                        {"label": "Zijwaarts springen",
+                         "value": "Zijwaarts_springen_totaal"},
+                        {"label": "Zijwaarts verplaatsen",
+                         "value": "Zijwaarts_verplaatsen_totaal"},
+                        {"label": "Hand-oog coördinatie",
+                         "value": "Oog_hand_coordinatie_totaal"},
+                    ],
+                    label_checked_style={"color": "green"},
+                    input_style={"backgroundColor": "red"},
+                    input_checked_style={
+                        "backgroundColor": "green",
+                        "borderColor": "#green",
+                    },
+                ),
+                ],
+            ),
+        ], class_name="mb-4")
 
 
     # This callback is used to dynamically create a boxplot
