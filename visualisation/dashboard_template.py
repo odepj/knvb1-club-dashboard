@@ -4,7 +4,6 @@ import dash_bootstrap_components as dbc
 import pandas as pd
 import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek
-from functools import reduce
 from flask import session
 
 
@@ -48,7 +47,7 @@ def init_dashboard_template(server):
                 ),
             ]
         ),
-    ])
+    ], class_name="mb-4")
 
     # All the statistiek dropdown menu's are put in this 'statistics' variable below
     statistics = dbc.Card([
@@ -73,7 +72,7 @@ def init_dashboard_template(server):
             ),
             ],
         ),
-    ])
+    ], class_name="mb-4")
 
     # The benchmark dropdown menu is put in this 'benchmark' variable below
     benchmark = dbc.Card([
@@ -100,23 +99,18 @@ def init_dashboard_template(server):
 
             dbc.Row(
                 [
-                    dbc.Col(filters, width=2),
+                    dbc.Col([filters, statistics, benchmark],
+                            width=2, style={"height": "20vh"}),
                     dbc.Col(dcc.Graph(id="boxplot", responsive=True), width=10),
                 ],
                 class_name="align-items-stretch"),
 
             dbc.Row(
                 [
-                    dbc.Col(statistics, width=2),
                     dbc.Col(dcc.Graph(id="line_chart",
                             responsive=True), width=10),
                 ],
-            ),
-
-            dbc.Row(
-                [
-                    dbc.Col(benchmark, width=2),
-                ],
+                class_name="justify-content-end"
             ),
         ], fluid=True)
 
@@ -152,8 +146,8 @@ def init_callbacks(dash_app):
         else:
             return dict()
 
-    # This callback is used to dynamically create a boxplot
 
+    # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
         [Input("dashboard_data", "children")])
@@ -163,6 +157,7 @@ def init_callbacks(dash_app):
 
         # return created plot here as callback output
         return {}
+
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(
