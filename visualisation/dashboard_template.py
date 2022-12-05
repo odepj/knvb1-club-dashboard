@@ -5,6 +5,7 @@ import pandas as pd
 import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek
 from flask import session
+from visualisation import algemene_motoriek_chart
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -112,6 +113,13 @@ def init_dashboard_template(server):
                 ],
                 class_name="justify-content-end"
             ),
+
+            dbc.Row(
+                [
+                    dbc.Col(html.Div(id="algemene_motoriek_graph"), width=10),
+                ],
+                class_name="justify-content-end"
+            ),
         ], fluid=True)
 
     # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
@@ -147,7 +155,7 @@ def init_callbacks(dash_app):
             return dict()
 
 
-    # This callback is used to dynamically return the blok test selection menu
+    # This callback is used to dynamically return the bloc test selection menu
     @dash_app.callback(
         Output('bloc_test_selection', 'children'),
         [Input('selected_dashboard', 'children')])
@@ -181,6 +189,18 @@ def init_callbacks(dash_app):
                 ],
             ),
         ], class_name="mb-4")
+
+
+    # This callback is used to dynamically return the bloc test chart
+    @dash_app.callback(
+        Output("algemene_motoriek_graph", "children"),
+        [Input("selected_dashboard", "children"), Input("dashboard_data", "children")])
+    def create_bloc_test_chart(selected_dashboard, dashboard_data):
+        if selected_dashboard != "algemene_motoriek":
+            return None
+
+        figure = algemene_motoriek_chart.create_chart(pd.DataFrame(dashboard_data))
+        return dcc.Graph(figure=figure, responsive=True)   
 
 
     # This callback is used to dynamically create a boxplot

@@ -21,7 +21,7 @@ columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance
 # This method is used to prepare all the required rows based on the selected tests in the dropdown menu
 def filter_test_data(tests: list):
     column_results = [columns.get(test) for test in tests if test in columns]
-    column_results.insert(0, ["id", "display_name","club_code", "team_naam", "meting"])
+    column_results.insert(0, ["id", "display_name", "club_code", "team_naam", "meting"])
 
     return list(numpy.concatenate(column_results).flat)
 

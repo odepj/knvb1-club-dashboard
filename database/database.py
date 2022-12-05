@@ -96,7 +96,7 @@ def request_change_of_direction(club_code: str):
 
 def request_algemene_motoriek(club_code: str):
     return pd.DataFrame(session.execute(
-        select(Han.id, Account.display_name, Han.club_code, Han.team_naam, Han.meting,
+        select(Han.id, Account.display_name, Han.club_code, Han.speler_code, Han.team_naam, Han.meting,
                Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
