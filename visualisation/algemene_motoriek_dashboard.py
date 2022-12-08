@@ -21,7 +21,7 @@ columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance
 # This method is used to prepare all the required rows based on the selected tests in the dropdown menu
 def filter_test_data(tests: list):
     column_results = [columns.get(test) for test in tests if test in columns]
-    column_results.insert(0, ["id", "display_name", "club_code", "team_naam", "meting"])
+    column_results.insert(0, ["id", "display_name", "bvo_naam", "team_naam", "reeks_naam"])
 
     return list(numpy.concatenate(column_results).flat)
 
@@ -31,7 +31,7 @@ def filter_data(teams, tests, measurements):
     # Get all the specific test, team, and measurement data with the dropdown selections
     filtered_tests = result[filter_test_data(tests)]
     filtered_teams = result[result["team_naam"].isin(teams)]
-    filtered_measurements = result[result["meting"].isin(measurements)]
+    filtered_measurements = result[result["reeks_naam"].isin(measurements)]
 
     # Here we use a reduce and merge function to get ONLY the rows that exist in ALL three filtered DataFrames
     final_results = reduce(lambda left, right: pd.merge(left, right, on=['id'],
@@ -43,21 +43,21 @@ def filter_data(teams, tests, measurements):
     return final_results
 
 
-# This method is used to get the total BLOC-score per team_naam, meting and club code/name
+# This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def get_filtered_sum(teams, tests, measurements):
     bvo_id = session.get("id")
     filtered_data = filter_data(teams, tests, measurements)
-    club_sorted = filtered_data[filtered_data["club_code"] == bvo_id]
+    club_sorted = filtered_data[filtered_data["bvo_naam"] == bvo_id]
 
-    return club_sorted.groupby(["team_naam", "meting", "club_code",  "display_name"]).agg('sum')
+    return club_sorted.groupby(["team_naam", "reeks_naam", "bvo_naam",  "display_name"]).agg('sum')
 
 
 # This method is used to get the median for each BLOC-test by getting the median from the sum of all club_codes
 def get_filtered_median(teams, tests, measurements):
     filtered_data = filter_data(teams, tests, measurements)
-    sum = filtered_data.groupby(["team_naam", "meting", "club_code", "display_name"]).agg('sum')
+    sum = filtered_data.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).agg('sum')
 
-    return sum.reset_index().groupby(["team_naam", "club_code", "display_name"]).agg('median')
+    return sum.reset_index().groupby(["team_naam", "bvo_naam", "display_name"]).agg('median')
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -105,10 +105,10 @@ def init_algemene_motoriek_dashboard(server):
                     # Measurement selection dropdown
                     dbc.Label("Metingen"),
                     dcc.Dropdown(
-                        [measurement for measurement in result["meting"].unique()],
+                        [measurement for measurement in result["reeks_naam"].unique()],
                         id="measurements",
-                        placeholder="Selecteer één of meerdere meting(en)",
-                        value=result["meting"].unique(),
+                        placeholder="Selecteer één of meerdere reeks_naam(en)",
+                        value=result["reeks_naam"].unique(),
                         multi=True
                     ),
                 ]
@@ -179,7 +179,7 @@ def init_callbacks(dash_app):
 
         # Get all the details on demand columns from the columns dictionary that are not in the total_columns
         details_on_demand = [columns.get(test) for test in tests if test in columns]
-        details_on_demand.insert(0, ["display_name", "club_code", "meting"])
+        details_on_demand.insert(0, ["display_name", "bvo_naam", "reeks_naam"])
         details_on_demand = list(filter(lambda x: (x not in total_columns), 
                             numpy.concatenate(details_on_demand).flat))
 

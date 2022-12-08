@@ -8,7 +8,7 @@ def sprint(data):
 
     # Load the dataset from SQL Database
     df = data.groupby("team_naam").mean(numeric_only=True).reset_index()
-    df.rename(columns={0: 'speler_code', 1: 'club_code', 2: 'X10_meter_sprint_beste', 3: 'X20_meter_sprint_beste', 4: 'X30_meter_sprint_beste', 5: 'team_naam'},
+    df.rename(columns={0: 'speler_id', 1: 'bvo_naam', 2: 'X10_meter_sprint_beste', 3: 'X20_meter_sprint_beste', 4: 'X30_meter_sprint_beste', 5: 'team_naam'},
               inplace=True)
 
     # Initialize figure with subplots

@@ -13,7 +13,7 @@ from visualisation.util_functions import add_figure_rangeslider, calculate_delta
 # Retrieve data from DB.
 data = get_zijwaarts_springen()
 col = 'Zijwaarts_springen_totaal'
-date_range = data['datum'].drop_duplicates().values
+date_range = data['Testdatum'].drop_duplicates().values
 
 
 # col = ['Zijwaarts_springen_1', 'Zijwaarts_springen_2','Zijwaarts_springen_totaal']
@@ -45,15 +45,14 @@ def init_vs_dashboard(server):
 def init_callbacks(dash_app):
     @dash_app.callback(Output("zijwaarts-springen-graph", "figure"), Input("graph-container", "loading_state"))
     def build_graph(loading_state):
-        print('loading_state:', loading_state)
         club_id = session.get("id")
 
         mean = calculate_mean_result_by_date(data.drop_duplicates())
-        club = calculate_mean_result_by_date(data[data['club_code'] == club_id].drop_duplicates())
+        club = calculate_mean_result_by_date(data[data['bvo_naam'] == club_id].drop_duplicates())
         bundled_df = [club, mean]
 
         fig = go.Figure()
-        [fig.add_trace(go.Scatter(x=d.index, y=d[col], name=d['club_code'].values[0])) for d in bundled_df]
+        [fig.add_trace(go.Scatter(x=d.index, y=d[col], name=d['bvo_naam'].values[0])) for d in bundled_df]
         fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Datum',
                           legend_title="Teams", title_x=0.5)
         fig = add_figure_rangeslider(fig)
@@ -68,7 +67,7 @@ def init_callbacks(dash_app):
         club_id = session.get("id")
 
         mean = calculate_mean_result_by_date(data.drop_duplicates())
-        club = calculate_mean_result_by_date(data[data['club_code'] == club_id].drop_duplicates())
+        club = calculate_mean_result_by_date(data[data['bvo_naam'] == club_id].drop_duplicates())
         s, f = mean[col], club[col]
 
         if relayoutData is not None and 'xaxis.range' in relayoutData:

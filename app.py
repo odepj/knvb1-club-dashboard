@@ -1,4 +1,3 @@
-import flask
 from flask import Flask, render_template
 from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
 import render_templates

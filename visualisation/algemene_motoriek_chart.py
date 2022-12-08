@@ -16,13 +16,13 @@ test_names = {"Balance_beam_totaal": "Evenwichtsbalk",
               "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen",
               "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie"}
 
-# This method is used to get the total BLOC-score per team_naam, meting and club code/name
+# This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
     bvo_id = session.get("id")
-    club_sorted = dataframe[dataframe["club_code"] == bvo_id]
+    club_sorted = dataframe[dataframe["bvo_naam"] == bvo_id]
 
-    team_player_counts = club_sorted.groupby("team_naam")["speler_code"].nunique().to_dict()
-    club_sorted = club_sorted.groupby(["team_naam", "meting", "club_code", "display_name"]).agg('sum').reset_index()
+    team_player_counts = club_sorted.groupby("team_naam")["speler_id"].nunique().to_dict()
+    club_sorted = club_sorted.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).agg('sum').reset_index()
     club_sorted["team_player_count"] = club_sorted["team_naam"].map(team_player_counts)
     club_sorted.set_index(list(club_sorted.select_dtypes(include="object").columns.values), inplace=True)
     
@@ -32,7 +32,6 @@ def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
 def create_chart(dataframe: pd.DataFrame) -> px.bar:
     # Get the filtered sum data, columns containing total values and club name
     filtered_data = _calculate_sum(dataframe).round(decimals=2)
-    print(filtered_data)
     total_columns = filtered_data.filter(regex='totaal').columns
     club = filtered_data["display_name"].get(0, "Geen club beschikbaar")
 
@@ -43,7 +42,7 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
 
     details_on_demand = [columns.get(test)
                          for test in tests if test in columns]
-    details_on_demand.insert(0, ["display_name", "club_code", "meting"])
+    details_on_demand.insert(0, ["display_name", "bvo_naam", "reeks_naam"])
     details_on_demand = list(filter(lambda x: (x not in total_columns),
                                     numpy.concatenate(details_on_demand).flat))
 

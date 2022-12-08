@@ -18,14 +18,14 @@ def nearest(items, pivot):
 
 
 def calculate_mean_result_by_date(df: pd.DataFrame):
-    if df['club_code'].nunique() > 1:
-        club_code = 'mean'
+    if df['bvo_naam'].nunique() > 1:
+        bvo_naam = 'mean'
     else:
-        club_code = df['club_code'].drop_duplicates().values[0]
+        bvo_naam = df['bvo_naam'].drop_duplicates().values[0]
 
-    df_mean = df.groupby(['datum', 'meting']).mean(numeric_only=False)
-    df_mean['club_code'] = club_code
-    df_mean['meting'], df_mean.index = df_mean.index.droplevel(0), df_mean.index.droplevel(1)
+    df_mean = df.groupby(['Testdatum', 'reeks_naam']).mean(numeric_only=False)
+    df_mean['bvo_naam'] = bvo_naam
+    df_mean['reeks_naam'], df_mean.index = df_mean.index.droplevel(0), df_mean.index.droplevel(1)
     return df_mean
 
 

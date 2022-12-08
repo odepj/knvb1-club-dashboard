@@ -9,24 +9,24 @@ from database.database import request_evenwichtsbalk
 from flask import session
 
 result = request_evenwichtsbalk()
-result["datum"] = pd.to_datetime(result["datum"])
+result["Testdatum"] = pd.to_datetime(result["Testdatum"])
 
 
 def filter_data_own_club(selection):
     bvo_id = session.get("id")
-    measurements = pd.Series(result["meting"].unique())
+    measurements = pd.Series(result["reeks_naam"].unique())
     measurement_count = selection if selection != 0 else len(measurements)
-    df_club = result[result["club_code"] == bvo_id]
-    filtered_data = df_club[df_club["meting"].isin(
+    df_club = result[result["bvo_naam"] == bvo_id]
+    filtered_data = df_club[df_club["reeks_naam"].isin(
         measurements.iloc[-measurement_count:])].reset_index(drop=True)
 
     return filtered_data
 
 
 def filter_data_all_clubs(selection):
-    measurements = pd.Series(result["meting"].unique())
+    measurements = pd.Series(result["reeks_naam"].unique())
     measurement_count = selection if selection != 0 else len(measurements)
-    filtered_data = result[result["meting"].isin(
+    filtered_data = result[result["reeks_naam"].isin(
         measurements.iloc[-measurement_count:])].reset_index(drop=True)
 
     return filtered_data
@@ -37,11 +37,11 @@ def calculate_medians_by_team(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 
 def calculate_medians_by_club(dataframe: pd.DataFrame) -> pd.DataFrame:
-    return dataframe.groupby(["team_naam", "club_code", "display_name"]).median(numeric_only=True).reset_index()
+    return dataframe.groupby(["team_naam", "bvo_naam", "display_name"]).median(numeric_only=True).reset_index()
 
 
 def calculate_medians_by_measurement(dataframe: pd.DataFrame) -> pd.DataFrame:
-    return dataframe.groupby(["team_naam", "meting"]).median(numeric_only=True).reset_index()
+    return dataframe.groupby(["team_naam", "reeks_naam"]).median(numeric_only=True).reset_index()
 
 
 def create_balance_beam_plots(df_club: pd.DataFrame):
