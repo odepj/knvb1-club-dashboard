@@ -31,10 +31,11 @@ class Account(Base):
 class Han(Base):
     __tablename__ = 'han'
 
-    id = Column(Integer, primary_key=True)
-    speler_code = Column(String(20))
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    allocatie_id = Column(Integer())
+    speler_id = Column(String(20))
     team_naam = Column(String(20))
-    meting = Column(String(20))
+    reeks_naam = Column(String(20))
     Staande_lengte = Column(Float())
     Zittende_lengte = Column(Float())
     Beenlengte = Column(Float())
@@ -72,23 +73,27 @@ class Han(Base):
     Vertesprong_1 = Column(Float())
     Vertesprong_2 = Column(Float())
     Vertesprong_beste = Column(Float())
-    club_code = Column(String(20))
-    datum = Column(Date())
+    bvo_naam = Column(String(20))
+    Testdatum = Column(Date())
     geboortedatum = Column(Date())
+    reeks_id = Column(Integer())
+    seizoen = Column(String(20))
 
-    def __init__(self, speler_code, team_naam, meting, Staande_lengte, Zittende_lengte, Beenlengte, Zithoogte,
-                 Gewicht, Maturity_Offset, Balance_Beam_6cm, Balance_Beam_4_5cm, Balance_Beam_3cm, Balance_beam_totaal,
-                 Zijwaarts_springen_1, Zijwaarts_springen_2, Zijwaarts_springen_totaal, Zijwaarts_verplaatsen_1,
-                 Zijwaarts_verplaatsen_2, Zijwaarts_verplaatsen_totaal, Oog_hand_coordinatie_1, Oog_hand_coordinatie_2,
-                 Oog_hand_coordinatie_totaal, X10_meter_sprint_1, X10_meter_sprint_2, X10_meter_sprint_beste,
-                 X20_meter_sprint_1, X20_meter_sprint_2, X20_meter_sprint_beste, X30_meter_sprint_1, X30_meter_sprint_2,
-                 X30_meter_sprint_beste, CoD_links_1, CoD_links_2, CoD_links_beste, CoD_rechts_1, CoD_rechts_2,
-                 CoD_rechts_beste, Vertesprong_1, Vertesprong_2, Vertesprong_beste, club_code, datum, geboortedatum,
-                 *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.speler_code = speler_code
+    def __init__(self,
+                    allocatie_id, speler_id, team_naam, reeks_naam, Staande_lengte, Zittende_lengte, Beenlengte, 
+                    Zithoogte, Gewicht, Maturity_Offset, Balance_Beam_6cm, Balance_Beam_4_5cm,
+                    Balance_Beam_3cm, Balance_beam_totaal, Zijwaarts_springen_1, Zijwaarts_springen_2, 
+                    Zijwaarts_springen_totaal, Zijwaarts_verplaatsen_1, Zijwaarts_verplaatsen_2, 
+                    Zijwaarts_verplaatsen_totaal, Oog_hand_coordinatie_1, Oog_hand_coordinatie_2, 
+                    Oog_hand_coordinatie_totaal, X10_meter_sprint_1, X10_meter_sprint_2, X10_meter_sprint_beste,
+                    X20_meter_sprint_1, X20_meter_sprint_2, X20_meter_sprint_beste, X30_meter_sprint_1, 
+                    X30_meter_sprint_2, X30_meter_sprint_beste, CoD_links_1, CoD_links_2, CoD_links_beste, 
+                    CoD_rechts_1, CoD_rechts_2, CoD_rechts_beste, Vertesprong_1, Vertesprong_2, 
+                    Vertesprong_beste, bvo_naam, Testdatum, geboortedatum, reeks_id, seizoen, *args, **kwargs):
+        self.allocatie_id = allocatie_id
+        self.speler_id = speler_id
         self.team_naam = team_naam
-        self.meting = meting
+        self.reeks_naam = reeks_naam
         self.Staande_lengte = Staande_lengte
         self.Zittende_lengte = Zittende_lengte
         self.Beenlengte = Beenlengte
@@ -107,7 +112,7 @@ class Han(Base):
         self.Zijwaarts_verplaatsen_totaal = Zijwaarts_verplaatsen_totaal
         self.Oog_hand_coordinatie_1 = Oog_hand_coordinatie_1
         self.Oog_hand_coordinatie_2 = Oog_hand_coordinatie_2
-        self.Oog_hand_coordinatie_Totaal = Oog_hand_coordinatie_totaal
+        self.Oog_hand_coordinatie_totaal = Oog_hand_coordinatie_totaal
         self.X10_meter_sprint_1 = X10_meter_sprint_1
         self.X10_meter_sprint_2 = X10_meter_sprint_2
         self.X10_meter_sprint_beste = X10_meter_sprint_beste
@@ -126,9 +131,12 @@ class Han(Base):
         self.Vertesprong_1 = Vertesprong_1
         self.Vertesprong_2 = Vertesprong_2
         self.Vertesprong_beste = Vertesprong_beste
-        self.club_code = club_code
-        self.datum = datum
+        self.bvo_naam = bvo_naam
+        self.Testdatum = Testdatum
         self.geboortedatum = geboortedatum
+        self.reeks_id = reeks_id
+        self.seizoen = seizoen
+        super().__init__(*args, **kwargs)
 
     @classmethod
     def instantiate_from_dataframe(cls, df: pd.DataFrame) -> list:
