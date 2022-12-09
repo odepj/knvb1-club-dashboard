@@ -30,11 +30,20 @@ def store_account(id: str, username: str, password, email: str, club: str):
     return '<h1>account stored</h1>'
 
 
+def request_bvo():
+    query = f"""SELECT DISTINCT acc.display_name, han.bvo_naam FROM accounts AS acc 
+            INNER JOIN han on acc.id = han.bvo_naam"""
+    return pd.DataFrame(execute_query(query))
+
+
 # request vertesprong by team_name and bvo_id
 def request_vertesprong(bvo_naam: str):
-    query = f"""SELECT `id`, `Vertesprong_1`, `Vertesprong_2`, `Vertesprong_beste`, 
-        `Staande_lengte`, `bvo_naam` FROM `han` WHERE `bvo_naam` = '{bvo_naam}'"""
-    return pd.DataFrame(execute_query(query))
+    return pd.DataFrame(session.execute(
+        select(Han.speler_id, Han.Vertesprong_1, 
+            Han.Vertesprong_2, Han.Vertesprong_beste,
+            Han.team_naam, Han.Staande_lengte, Han.bvo_naam, 
+            Han.geboortedatum, Han.seizoen)
+        .where(Han.bvo_naam == bvo_naam)))
 
 
 # request sprinten by team_name and bvo_id
@@ -42,7 +51,7 @@ def request_sprint(bvo_naam: str):
     return pd.DataFrame(session.execute(
         select(Han.speler_id, Han.X10_meter_sprint_beste, 
             Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
-            Han.team_naam)
+            Han.team_naam, Han.geboortedatum, Han.seizoen)
         .where(Han.bvo_naam == bvo_naam)
     ))
 
@@ -89,14 +98,14 @@ def request_change_of_direction(bvo_naam: str):
     # return \
     return pd.DataFrame(session.execute(
         select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
-               Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.bvo_naam)
+               Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.bvo_naam, Han.geboortedatum, Han.seizoen)
         .where(Han.bvo_naam == bvo_naam))
     )
 
 
 def request_algemene_motoriek(bvo_naam: str):
     return pd.DataFrame(session.execute(
-        select(Han.id, Account.display_name, Han.bvo_naam, Han.speler_id, Han.team_naam, Han.reeks_naam,
+        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.speler_id, Han.team_naam, Han.reeks_naam,
                Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,

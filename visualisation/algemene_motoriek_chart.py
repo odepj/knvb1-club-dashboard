@@ -1,7 +1,5 @@
-from flask import session
 import pandas as pd
 import plotly.express as px
-import numpy
 pd.options.mode.chained_assignment = None 
 
 # This dictionary will be used to lookup BLOC-test specific rows
@@ -18,15 +16,12 @@ test_names = {"Balance_beam_totaal": "Evenwichtsbalk",
 
 # This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
-    bvo_id = session.get("id")
-    club_sorted = dataframe[dataframe["bvo_naam"] == bvo_id]
-
-    team_player_counts = club_sorted.groupby("team_naam")["speler_id"].nunique().to_dict()
-    club_sorted = club_sorted.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).agg('sum').reset_index()
-    club_sorted["team_player_count"] = club_sorted["team_naam"].map(team_player_counts)
-    club_sorted.set_index(list(club_sorted.select_dtypes(include="object").columns.values), inplace=True)
+    team_player_counts = dataframe.groupby("team_naam")["speler_id"].nunique().to_dict()
+    dataframe = dataframe.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).agg('sum').reset_index()
+    dataframe["team_player_count"] = dataframe["team_naam"].map(team_player_counts)
+    dataframe.set_index(list(dataframe.select_dtypes(include="object").columns.values), inplace=True)
     
-    return club_sorted.iloc[:,:-1].div(club_sorted["team_player_count"], axis=0).reset_index()
+    return dataframe.iloc[:,:-1].div(dataframe["team_player_count"], axis=0).reset_index()
 
 
 def create_chart(dataframe: pd.DataFrame) -> px.bar:
@@ -37,32 +32,31 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
 
     # Get all the details on demand columns from the columns dictionary that are not in the total_columns
     # TEMPORARY solution, please check algemene_dashboard.py for the dynamic version of these lines of code
-    tests = ["Evenwichtsbalk", "Zijwaarts springen",
-             "Zijwaarts verplaatsen", "Hand-oog coördinatie"]
-
-    details_on_demand = [columns.get(test)
-                         for test in tests if test in columns]
-    details_on_demand.insert(0, ["display_name", "bvo_naam", "reeks_naam"])
-    details_on_demand = list(filter(lambda x: (x not in total_columns),
-                                    numpy.concatenate(details_on_demand).flat))
+    #tests = ["Evenwichtsbalk", "Zijwaarts springen",
+    #         "Zijwaarts verplaatsen", "Hand-oog coördinatie"]
+#
+    #details_on_demand = [columns.get(test)
+    #                     for test in tests if test in columns]
+    #details_on_demand.insert(0, ["display_name", "bvo_naam", "reeks_naam"])
+    #details_on_demand = list(filter(lambda x: (x not in total_columns),
+                                    #numpy.concatenate(details_on_demand).flat))
 
     hover_template = """Club naam: %{customdata[0]} <br>Club code: %{customdata[1]}
         <br>Team: %{x} <br>Totaal score: %{y} punten <br>Meting: %{customdata[2]}
         <br><br>BLOC-test specifieke totaal scores:<br>"""
 
     # Generate a hover_template for details on the demand by looping over the available details
-    for i in range(3, len(details_on_demand)):
-        hover_template += f"{details_on_demand[i]}: %{{customdata[{i}]}} punten<br>"
+    #for i in range(3, len(details_on_demand)):
+    #    hover_template += f"{details_on_demand[i]}: %{{customdata[{i}]}} punten<br>"
 
     # Create a bar chart using the filtered data and add additional styling and hover information
     fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                 title=f"BLOC-test totaal score spelers per team voor uw club: {club}",
-                 custom_data=details_on_demand)
+                 title=f"BLOC-test totaal score spelers per team voor uw club: {club}",)
 
     fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
                       barmode='stack', legend_title="BLOC-testen", title_x=0.5)
 
-    fig.update_traces(hovertemplate=hover_template)
+    #fig.update_traces(hovertemplate=hover_template)
 
     # rename every BLOC test variable to readable names for the legend and bars using the test_names dictionary
     fig.for_each_trace(lambda t: t.update(name=test_names[t.name]))
