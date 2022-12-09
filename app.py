@@ -14,11 +14,6 @@ app = init_app()
 app.secret_key = 'databaseproject'
 
 
-@app.route('/')
-def intro():
-    return render_template('intro.html')
-
-
 @app.route('/request', methods=['GET', 'POST'])
 def request():
     return handle_request()
@@ -57,6 +52,11 @@ def change_of_direction():
 @app.route('/dashboard/algemene_motoriek', methods=['GET', 'POST'])
 def algemene_motoriek():
     return render_templates.algemene_motoriek()
+
+
+@app.route('/')
+def intro():
+    return render_template('intro.html')
 
 
 if __name__ == "__main__":

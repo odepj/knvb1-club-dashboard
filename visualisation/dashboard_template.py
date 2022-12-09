@@ -3,9 +3,14 @@ from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
 import regex as re
-from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek
+from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
+    request_algemene_motoriek
 from flask import session
 from visualisation import algemene_motoriek_chart
+
+import plotly.graph_objs as go
+
+from visualisation.util_functions import calculate_mean_result_by_date, add_figure_rangeslider
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -109,7 +114,7 @@ def init_dashboard_template(server):
             dbc.Row(
                 [
                     dbc.Col(dcc.Graph(id="line_chart",
-                            responsive=True), width=10),
+                                      responsive=True), width=10),
                 ],
                 class_name="justify-content-end"
             ),
@@ -154,7 +159,6 @@ def init_callbacks(dash_app):
         else:
             return dict()
 
-
     # This callback is used to dynamically return the bloc test selection menu
     @dash_app.callback(
         Output('bloc_test_selection', 'children'),
@@ -171,7 +175,7 @@ def init_callbacks(dash_app):
                     id="bloc_test_selection",
                     options=[
                         {"label": "Evenwichtsbalk",
-                            "value": "Balance_beam_totaal"},
+                         "value": "Balance_beam_totaal"},
                         {"label": "Zijwaarts springen",
                          "value": "Zijwaarts_springen_totaal"},
                         {"label": "Zijwaarts verplaatsen",
@@ -190,7 +194,6 @@ def init_callbacks(dash_app):
             ),
         ], class_name="mb-4")
 
-
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
@@ -200,8 +203,7 @@ def init_callbacks(dash_app):
             return None
 
         figure = algemene_motoriek_chart.create_chart(pd.DataFrame(dashboard_data))
-        return dcc.Graph(figure=figure, responsive=True)   
-
+        return dcc.Graph(figure=figure, responsive=True)
 
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
@@ -214,14 +216,34 @@ def init_callbacks(dash_app):
         # return created plot here as callback output
         return {}
 
-
     # This callback is used to dynamically create a line chart
     @dash_app.callback(
         Output("line_chart", "figure"),
-        [Input("dashboard_data", "children")])
+        [Input("dashboard_data", "children")]
+    )
     def create_line_chart(dashboard_data):
+        club_id = session.get('id')
+        dashboard_data = pd.DataFrame(dashboard_data)
+        #   Dashboard data should contain the measurement(s), datum, club_code and meting.
+        #   Mean results are grouped by geboortedatum. Datum will be the df_index for x-axis convenience.
+        #   x-axis displays 'meting'
+        #   Each measurement column gets its own trace and will be coloured by club_code
+        #
+
         # place code for creating the line chart here
         # var dashboard data contains a dict of the current dashboard data DataFrame
+        # mean = calculate_mean_result_by_date(dashboard_data.drop_duplicates())
+        # club = calculate_mean_result_by_date(dashboard_data[dashboard_data['club_code'] == club_id].drop_duplicates())
 
-        # return created chart here as callback output
-        return {}
+        # bundled_df = [club, mean]
+
+        fig = go.Figure()
+        # [fig.add_trace(go.Scatter(x=d.index, y=d.columns, name=d['club_code'].values[0])) for d in bundled_df]
+        fig.update_layout(
+            yaxis_title='Totaal score (punten)',
+            xaxis_title='Datum',
+            legend_title="Teams",
+            title_x=0.5
+        )
+        fig = add_figure_rangeslider(fig)
+        return fig
