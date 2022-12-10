@@ -63,7 +63,8 @@ def init_dashboard_template(server):
                         {"label": "Boxplot", "value": "boxplot"},
                         {"label": "Individuen", "value": "individuen"},
                     ],
-
+                    value=["mediaan", 
+                        "boxplot", "individuen"],
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -88,7 +89,7 @@ def init_dashboard_template(server):
                 [
                     dbc.Col([html.Div(id="bloc_test_selection"), html.Div(id="filter_selection"), statistics, benchmark],
                             width=2, style={"height": "10rem"}),
-                    dbc.Col(dcc.Graph(id="boxplot", responsive=True), width=10),
+                    dbc.Col(html.Div(id="show_boxplot"), width=10),
                 ],
                 class_name="align-items-stretch"),
 
@@ -221,10 +222,9 @@ def init_callbacks(dash_app):
         Input("teams", "value"),
         Input("lichting", "value"),
         Input("seizoen", "value"),
-        Input("statistics", "value"),
         Input("bvo", "value"),
         Input("bloc_test_selection", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, statistics, bvo, bloc_test_selection):
+    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
@@ -234,14 +234,12 @@ def init_callbacks(dash_app):
             dashboard_data = dashboard_data[dashboard_data["geboortedatum"].dt.year == lichting]
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
-
         if bloc_test_selection is not None:
             dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
             
         return dashboard_data.to_dict(orient='records')
 
-
-    # This callback is used to dynamically return the bloc test chart
+     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
         [Input("selected_dashboard", "children"), Input("filter_output", "children")])
@@ -255,8 +253,18 @@ def init_callbacks(dash_app):
 
         figure = algemene_motoriek_chart.create_chart(
             pd.DataFrame(dashboard_data))
-        return dcc.Graph(figure=figure, responsive=True)
+        return dcc.Graph(figure=figure, responsive=True)    
 
+
+    # This callback is used to dynamically show the boxplot
+    @dash_app.callback(
+        Output("show_boxplot", "children"),
+        [Input("statistics", "value")])
+    def show_boxplot(statistics):
+        print(statistics)
+
+        if "boxplot" in statistics:
+            return dcc.Graph(id="boxplot", responsive=True)
 
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
