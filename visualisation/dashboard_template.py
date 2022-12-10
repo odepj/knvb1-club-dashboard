@@ -1,7 +1,7 @@
 import dash
 from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
-import datetime as dt
+import itertools
 import pandas as pd
 import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek, request_bvo
@@ -11,11 +11,21 @@ from visualisation import algemene_motoriek_chart
 # this list contains the names of all the unique bvo's in the database
 bvo_list = request_bvo()
 
-# This dictionary will be used to lookup BLOC-test specific rows
-columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"], 
+
+def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
+    # This dictionary will be used to lookup BLOC-test specific rows
+    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"], 
         "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
         "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2", "Zijwaarts_verplaatsen_totaal"],
         "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2", "Oog_hand_coordinatie_totaal"]}
+
+    # remove all the bloc_tests from the columns dictionary if it exists in selection
+    for bloc_test in bloc_test_selection:
+        columns.pop(bloc_test)
+
+    remaining_columns = list(columns.values())
+    dropped_list = list(itertools.chain.from_iterable(remaining_columns))
+    return dashboard_data.drop(dropped_list, axis=1)
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -155,6 +165,8 @@ def init_callbacks(dash_app):
                         {"label": "Hand-oog coördinatie",
                          "value": "Hand-oog coördinatie"},
                     ],
+                    value=["Evenwichtsbalk", "Zijwaarts springen", 
+                        "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -222,14 +234,10 @@ def init_callbacks(dash_app):
             dashboard_data = dashboard_data[dashboard_data["geboortedatum"].dt.year == lichting]
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
-        #if bvo is not None:
-            # mist nog
 
         if bloc_test_selection is not None:
-            column_results = [columns.get(bloc_test_selection) for bloc_test_selection 
-                in bloc_test_selection if bloc_test_selection not in columns] 
-            dashboard_data = dashboard_data.drop(column_results, axis=1)
-
+            dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
+            
         return dashboard_data.to_dict(orient='records')
 
 
