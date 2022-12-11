@@ -41,7 +41,9 @@ def request_vertesprong(bvo_naam: str):
         select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
                Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.Vertesprong_1,
                Han.Vertesprong_2, Han.Vertesprong_beste
-               ).where(Account.id == Han.bvo_naam)
+               )
+        .where(Account.id == Han.bvo_naam)
+        .where(Han.bvo_naam == bvo_naam)
     ))
 
 
@@ -61,8 +63,8 @@ def request_hand_oog_coordinatie(bvo_naam: str):
         select(Han.speler_id, Han.Oog_hand_coordinatie_totaal,
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
                Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
-        .where(Han.bvo_naam == bvo_naam)
-    ))
+        .where(Account.id == Han.bvo_naam))
+    )
 
 
 # request zijwaarts verplaatsen by team_name and bvo_id
