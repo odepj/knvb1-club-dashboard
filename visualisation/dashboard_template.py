@@ -1,25 +1,37 @@
 import dash
 from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
-import datetime as dt
+import itertools
 import pandas as pd
 import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek, request_bvo
 from flask import session
 from visualisation import algemene_motoriek_chart
+import plotly.graph_objs as go
+from visualisation.util_functions import calculate_mean_result_by_date, add_figure_rangeslider
 
 # this list contains the names of all the unique bvo's in the database
 bvo_list = request_bvo()
+data_set = pd.DataFrame
+META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_naam', 'display_name', 'speler_id',
+                'geboortedatum', 'Staande_lengte']
 
-# This dictionary will be used to lookup BLOC-test specific rows
-columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
+
+
+def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
+    # This dictionary will be used to lookup BLOC-test specific rows
+    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
         "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
         "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2", "Zijwaarts_verplaatsen_totaal"],
         "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2", "Oog_hand_coordinatie_totaal"]}
 
-import plotly.graph_objs as go
+    # remove all the bloc_tests from the columns dictionary if it exists in selection
+    for bloc_test in bloc_test_selection:
+        columns.pop(bloc_test)
 
-from visualisation.util_functions import calculate_mean_result_by_date, add_figure_rangeslider
+    remaining_columns = list(columns.values())
+    dropped_list = list(itertools.chain.from_iterable(remaining_columns))
+    return dashboard_data.drop(dropped_list, axis=1)
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -57,7 +69,8 @@ def init_dashboard_template(server):
                         {"label": "Boxplot", "value": "boxplot"},
                         {"label": "Individuen", "value": "individuen"},
                     ],
-
+                    value=["mediaan",
+                        "boxplot", "individuen"],
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -82,7 +95,7 @@ def init_dashboard_template(server):
                 [
                     dbc.Col([html.Div(id="bloc_test_selection"), html.Div(id="filter_selection"), statistics, benchmark],
                             width=2, style={"height": "10rem"}),
-                    dbc.Col(dcc.Graph(id="boxplot", responsive=True), width=10),
+                    dbc.Col(html.Div(id="show_boxplot"), width=10),
                 ],
                 class_name="align-items-stretch"),
 
@@ -122,18 +135,19 @@ def init_callbacks(dash_app):
         [Input('selected_dashboard', 'children')])
     def get_dashboard_data(selected_dashboard) -> dict:
         bvo_id = session.get('id')
+        data_dict = dict()
 
         if selected_dashboard == "verspringen":
-            return request_vertesprong(bvo_id).to_dict(orient='records')
+            data_dict = request_vertesprong(bvo_id).to_dict(orient='records')
         elif selected_dashboard == "sprint":
-            return request_sprint(bvo_id).to_dict(orient='records')
+            data_dict = request_sprint(bvo_id).to_dict(orient='records')
         elif selected_dashboard == "cod":
-            return request_change_of_direction(bvo_id).to_dict(orient='records')
+            data_dict = request_change_of_direction(bvo_id).to_dict(orient='records')
         elif selected_dashboard == "algemene_motoriek":
-            return request_algemene_motoriek(bvo_id).to_dict(orient='records')
-        else:
-            return dict()
+            data_dict = request_algemene_motoriek(bvo_id).to_dict(orient='records')
 
+        data_set = data_dict
+        return data_dict
 
     # This callback is used to dynamically return the bloc test selection menu
     @dash_app.callback(
@@ -151,7 +165,7 @@ def init_callbacks(dash_app):
                     id="bloc_test_selection",
                     options=[
                         {"label": "Evenwichtsbalk",
-                            "value": "Evenwichtsbalk"},
+                         "value": "Evenwichtsbalk"},
                         {"label": "Zijwaarts springen",
                          "value": "Zijwaarts springen"},
                         {"label": "Zijwaarts verplaatsen",
@@ -159,6 +173,8 @@ def init_callbacks(dash_app):
                         {"label": "Hand-oog coördinatie",
                          "value": "Hand-oog coördinatie"},
                     ],
+                    value=["Evenwichtsbalk", "Zijwaarts springen",
+                        "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -213,10 +229,9 @@ def init_callbacks(dash_app):
         Input("teams", "value"),
         Input("lichting", "value"),
         Input("seizoen", "value"),
-        Input("statistics", "value"),
         Input("bvo", "value"),
         Input("bloc_test_selection", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, statistics, bvo, bloc_test_selection):
+    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
@@ -226,16 +241,48 @@ def init_callbacks(dash_app):
             dashboard_data = dashboard_data[dashboard_data["geboortedatum"].dt.year == lichting]
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
-        #if bvo is not None:
-            # mist nog
+        if bvo is not None:
+            team_naam = bvo_list[bvo_list["display_name"] == bvo]['bvo_naam'].values[0]
+            dashboard_data = dashboard_data[dashboard_data["bvo_naam"] == team_naam]
+        if statistics is None:
+            statistics = []
 
         if bloc_test_selection is not None:
-            column_results = [columns.get(bloc_test_selection) for bloc_test_selection
-                in bloc_test_selection if bloc_test_selection not in columns]
-            dashboard_data = dashboard_data.drop(column_results, axis=1)
+            dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
 
-        return dashboard_data.to_dict(orient='records')
+        return dashboard_data.to_dict(orient='records'), statistics
 
+    # This callback is used to dynamically create a line chart
+    @dash_app.callback(
+        Output("line_chart", "figure"),
+        [Input("filter_output", "children")])
+    def create_line_chart(dashboard_data):
+        bvo_id = session.get('id')
+        dashboard_data, statistics = dashboard_data
+        dashboard_data = pd.DataFrame(dashboard_data)
+        measurement_columns = list(set(dashboard_data.columns.values).symmetric_difference(META_COLUMNS))
+        measurement = [col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])]
+        data = dashboard_data.loc[:, measurement]
+
+
+
+        # place code for creating the line chart here
+        # var dashboard data contains a dict of the current dashboard data DataFrame
+        mean = calculate_mean_result_by_date(dashboard_data.drop_duplicates())
+        club = calculate_mean_result_by_date(dashboard_data[dashboard_data['bvo_naam'] == bvo_id].drop_duplicates())
+
+        bundled_df = [club, mean]
+
+        fig = go.Figure()
+        [fig.add_trace(go.Scatter(x=d.index, y=d.columns, name=d['bvo_naam'].values[0])) for d in bundled_df]
+        fig.update_layout(
+            yaxis_title='Totaal score (punten)',
+            xaxis_title='Datum',
+            legend_title="Teams",
+            title_x=0.5
+        )
+        fig = add_figure_rangeslider(fig)
+        return fig
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
@@ -254,6 +301,16 @@ def init_callbacks(dash_app):
         return dcc.Graph(figure=figure, responsive=True)
 
 
+    # This callback is used to dynamically show the boxplot
+    @dash_app.callback(
+        Output("show_boxplot", "children"),
+        [Input("statistics", "value")])
+    def show_boxplot(statistics):
+        print(statistics)
+
+        if "boxplot" in statistics:
+            return dcc.Graph(id="boxplot", responsive=True)
+
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
@@ -264,35 +321,3 @@ def init_callbacks(dash_app):
 
         # return created plot here as callback output
         return {}
-
-
-    # This callback is used to dynamically create a line chart
-    @dash_app.callback(
-        Output("line_chart", "figure"),
-        [Input("filter_output", "children")])
-    def create_line_chart(dashboard_data):
-        club_id = session.get('id')
-        dashboard_data = pd.DataFrame(dashboard_data)
-        #   Dashboard data should contain the measurement(s), datum, club_code and meting.
-        #   Mean results are grouped by geboortedatum. Datum will be the df_index for x-axis convenience.
-        #   x-axis displays 'meting'
-        #   Each measurement column gets its own trace and will be coloured by club_code
-        #
-
-        # place code for creating the line chart here
-        # var dashboard data contains a dict of the current dashboard data DataFrame
-        # mean = calculate_mean_result_by_date(dashboard_data.drop_duplicates())
-        # club = calculate_mean_result_by_date(dashboard_data[dashboard_data['club_code'] == club_id].drop_duplicates())
-
-        # bundled_df = [club, mean]
-
-        fig = go.Figure()
-        # [fig.add_trace(go.Scatter(x=d.index, y=d.columns, name=d['club_code'].values[0])) for d in bundled_df]
-        fig.update_layout(
-            yaxis_title='Totaal score (punten)',
-            xaxis_title='Datum',
-            legend_title="Teams",
-            title_x=0.5
-        )
-        fig = add_figure_rangeslider(fig)
-        return fig
