@@ -17,6 +17,14 @@ META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_na
                 'geboortedatum', 'Staande_lengte']
 
 
+def save_filter_to_session(key: str, value: str) -> None:
+    session[key] = value
+
+
+def retrieve_filter_from_session(key: str) -> str:
+    return session.get(key)
+
+
 # This method is used by the app.py to initialize the Dash dashboard in Flask
 # This workaround allows us to use Dash inside a Flask app by using its own route
 def init_dashboard_template(server):
@@ -26,44 +34,6 @@ def init_dashboard_template(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-    # The benchmark dropdown menu is put in this 'benchmark' variable below
-    benchmark = dbc.Card([
-        dbc.CardHeader("Benchmark", class_name="text-center fw-bold",
-                       style={"background-color": "#FF9900"}),
-        dbc.CardBody(
-            [  # Benchmark selection dropdown
-                dcc.Dropdown(
-                    placeholder="BVO's",
-                    options=BVO_LIST["display_name"],
-                    id="bvo",
-                ), ],
-        ),
-    ])
-
-    statistics = dbc.Card([
-        dbc.CardHeader("Statistiek", class_name="text-center fw-bold",
-                       style={"background-color": "#FF9900"}),
-        dbc.CardBody(
-            [dbc.Checklist(
-                id="statistics",
-                options=[
-                    {"label": "Gemiddelde", "value": "gemiddelde"},
-                    {"label": "Mediaan", "value": "mediaan"},
-                    {"label": "Boxplot", "value": "boxplot"},
-                    {"label": "Individuen", "value": "individuen"},
-                ],
-                value=["mediaan",
-                       "boxplot", "individuen"],
-                label_checked_style={"color": "green"},
-                input_style={"backgroundColor": "red"},
-                input_checked_style={
-                    "backgroundColor": "green",
-                    "borderColor": "#green",
-                },
-            ),
-            ],
-        ),
-    ], class_name="mb-4")
 
     # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
     dash_app.layout = dbc.Container(
@@ -81,10 +51,10 @@ def init_dashboard_template(server):
                     children=[
                         html.Div(id="bloc_test_selection"),
                         html.Div(id="filter_selection"),
-                        statistics,
-                        benchmark
-                    ]
-                ),
+                        html.Div(id="statistics_selection"),
+                        html.Div(id="benchmark_selection"),
+                    ],
+                style={"height": "10rem"}),
                 # Graphs
                 dbc.Col(
                     width=10,
@@ -129,7 +99,6 @@ def init_callbacks(dash_app):
         elif selected_dashboard == "algemene_motoriek":
             data_dict = request_algemene_motoriek(bvo_id).to_dict(orient='records')
 
-        data_set = data_dict
         return data_dict
 
     # This callback is used to dynamically return the bloc test selection menu
@@ -139,6 +108,16 @@ def init_callbacks(dash_app):
     def bloc_test_selection(selected_dashboard):
         if selected_dashboard != "algemene_motoriek":
             return None
+
+        # add the default bloc-test selection
+        values = ["Evenwichtsbalk", "Zijwaarts springen",
+                        "Zijwaarts verplaatsen", "Hand-oog coördinatie"]
+
+        session_bloc = retrieve_filter_from_session("bloc_test_selection")
+        if session_bloc is None:
+            session_bloc = values
+            save_filter_to_session("bloc_test_selection", values)
+
 
         return dbc.Card([
             dbc.CardHeader("BLOC-testen", class_name="text-center fw-bold",
@@ -156,8 +135,7 @@ def init_callbacks(dash_app):
                         {"label": "Hand-oog coördinatie",
                          "value": "Hand-oog coördinatie"},
                     ],
-                    value=["Evenwichtsbalk", "Zijwaarts springen",
-                           "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
+                    value=session_bloc,
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -186,6 +164,7 @@ def init_callbacks(dash_app):
                     dcc.Dropdown(
                         sorted([team_name for team_name in dashboard_data["team_naam"].unique()]),
                         id="teams",
+                        value=retrieve_filter_from_session("teams"),
                         placeholder="Teams",
                         className="mb-2"),
 
@@ -193,6 +172,7 @@ def init_callbacks(dash_app):
                     dcc.Dropdown(
                         sorted([lichting for lichting in dashboard_data["geboortedatum"].dt.year.unique()]),
                         id="lichting",
+                        value=retrieve_filter_from_session("lichting"),
                         placeholder="Lichting",
                         className="mb-2"),
 
@@ -200,11 +180,71 @@ def init_callbacks(dash_app):
                     dcc.Dropdown(
                         [season for season in dashboard_data["seizoen"].unique()],
                         id="seizoen",
+                        value=retrieve_filter_from_session("seizoen"),
                         placeholder="Seizoen",
                     ),
                 ]
             ),
         ], class_name="mb-4")
+
+
+    # This callback is used to dynamically return the statistics selection menu
+    @dash_app.callback(
+        Output('statistics_selection', 'children'),
+        [Input('dashboard_data', 'children')])
+    def statistics_selection(dashboard_data) -> dbc.Card:
+        # add the default statistics selection
+        values = ["mediaan", "boxplot", "individuen"]
+
+        session_statistics = retrieve_filter_from_session("statistics")
+        if session_statistics is None:
+            session_statistics = values
+            save_filter_to_session("statistics", values)
+
+        return dbc.Card([
+            dbc.CardHeader("Statistiek", class_name="text-center fw-bold",
+                           style={"background-color": "#FF9900"}),
+            dbc.CardBody(
+                [dbc.Checklist(
+                    id="statistics",
+                    options=[
+                        {"label": "Gemiddelde", "value": "gemiddelde"},
+                        {"label": "Mediaan", "value": "mediaan"},
+                        {"label": "Boxplot", "value": "boxplot"},
+                        {"label": "Individuen", "value": "individuen"},
+                    ],
+                    value=session_statistics,
+                    label_checked_style={"color": "green"},
+                    input_style={"backgroundColor": "red"},
+                    input_checked_style={
+                        "backgroundColor": "green",
+                        "borderColor": "#green",
+                    },
+                ),
+                ],
+            ),
+        ], class_name="mb-4")
+
+
+    # This callback is used to dynamically return the benchmark selection menu
+    @dash_app.callback(
+        Output('benchmark_selection', 'children'),
+        [Input('dashboard_data', 'children')])
+    def benchmark_selection(dashboard_data) -> dbc.Card:
+        return dbc.Card([
+            dbc.CardHeader("Benchmark", class_name="text-center fw-bold",
+                       style={"background-color": "#FF9900"}),
+            dbc.CardBody(
+                [  # Benchmark selection dropdown
+                    dcc.Dropdown(
+                        placeholder="BVO's",
+                        options=BVO_LIST["display_name"],
+                        id="bvo",
+                        value=retrieve_filter_from_session("bvo"),
+                    ), ],
+                ),
+            ])
+
 
     @dash_app.callback(Output("filter_output", "children"),
                        [Input("dashboard_data", "children"),
@@ -212,17 +252,21 @@ def init_callbacks(dash_app):
                         Input("lichting", "value"),
                         Input("seizoen", "value"),
                         Input("bvo", "value"),
-                        Input("bloc_test_selection", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection):
+                        Input("bloc_test_selection", "value"),
+                        Input("statistics", "value")])
+    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, statistics):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
         if teams is not None:
             dashboard_data = dashboard_data[dashboard_data["team_naam"] == teams]
+
         if lichting is not None:
             dashboard_data = dashboard_data[dashboard_data["geboortedatum"].dt.year == lichting]
+
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
+
         if bvo is not None:
             team_naam = BVO_LIST[BVO_LIST["display_name"] == bvo]['bvo_naam'].values[0]
             dashboard_data = dashboard_data[dashboard_data["bvo_naam"] == team_naam]
@@ -230,15 +274,25 @@ def init_callbacks(dash_app):
         if bloc_test_selection is not None:
             dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
 
+        save_filter_to_session("teams", teams)
+        save_filter_to_session("lichting", lichting)
+        save_filter_to_session("seizoen", seizoen)
+        save_filter_to_session("bvo", bvo)
+        save_filter_to_session("bloc_test_selection", bloc_test_selection),
+        save_filter_to_session("statistics", statistics),
+
         return dashboard_data.to_dict(orient='records')
 
     # TODO ############## This callback is used to dynamically create a line chart #################
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("filter_output", "children"),
-                        Input("statistics", "value")])
-    def create_line_chart(dashboard_data, statistics):
+                       [Input("filter_output", "children")])
+    # Input("statistics", "value"),])
+    def create_line_chart(dashboard_data):
+        if dashboard_data is None:
+            # PreventUpdate prevents ALL outputs updating
+            raise dash.exceptions.PreventUpdate
+
         bvo_id = session.get('id')
-        print('line-graph:', statistics)
         dashboard_data = pd.DataFrame(dashboard_data)
 
         # #Get the columns that have the actual measurement
@@ -278,13 +332,6 @@ def init_callbacks(dash_app):
     def update_line_chart_info_card(selectedData, relayoutData):
         return f'{selectedData}, {relayoutData}'
 
-    # TODO: ########## LINE-CHART-SPECIFIC-FILTERS ###########
-    # @dash_app.callback(Output("overview", "children"),
-    #                    [Input("line_chart", "selectedData"),
-    #                     Input("line_chart", "relayoutData")])
-    # def update_line_chart(selectedData, relayoutData):
-    #     return f'{selectedData}, {relayoutData}'
-
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
@@ -306,10 +353,9 @@ def init_callbacks(dash_app):
         Output("show_boxplot", "children"),
         [Input("statistics", "value")])
     def show_boxplot(statistics):
-        print(statistics)
-
-        if "boxplot" in statistics:
+        if statistics is not None and "boxplot" in statistics:
             return dcc.Graph(id="boxplot", responsive=True)
+
 
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
