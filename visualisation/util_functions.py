@@ -17,13 +17,13 @@ def nearest(items, pivot):
     return min(items, key=lambda x: abs(x - pivot))
 
 
-def calculate_mean_result_by_date(df: pd.DataFrame):
+def calculate_mean_result_by_date(df: pd.DataFrame, columns):
     if df['bvo_naam'].nunique() > 1:
         bvo_naam = 'mean'
     else:
         bvo_naam = df['bvo_naam'].drop_duplicates().values[0]
 
-    df_mean = df.groupby(['Testdatum', 'reeks_naam']).mean(numeric_only=False)
+    df_mean = df.groupby(['Testdatum', 'reeks_naam'])[columns].mean(numeric_only=False)
     df_mean['bvo_naam'] = bvo_naam
     df_mean['reeks_naam'], df_mean.index = df_mean.index.droplevel(0), df_mean.index.droplevel(1)
     return df_mean
