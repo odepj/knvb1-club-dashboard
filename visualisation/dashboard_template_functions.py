@@ -1,8 +1,5 @@
-from datetime import datetime
-
+import itertools
 import pandas as pd
-
-from database.database import session
 
 
 def calculate_delta(value: pd.Series, from_, to_):
@@ -57,3 +54,22 @@ def add_figure_rangeslider(fig):
             type="date"
         )
     )
+
+
+def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
+    # This dictionary will be used to lookup BLOC-test specific rows
+    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
+               "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
+               "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2",
+                                         "Zijwaarts_verplaatsen_totaal"],
+               "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2",
+                                        "Oog_hand_coordinatie_totaal"]}
+
+    # remove all the bloc_tests from the columns dictionary if it exists in selection
+    for bloc_test in bloc_test_selection:
+        columns.pop(bloc_test)
+
+    remaining_columns = list(columns.values())
+    dropped_list = list(itertools.chain.from_iterable(remaining_columns))
+    return dashboard_data.drop(dropped_list, axis=1)
+

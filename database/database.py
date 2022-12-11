@@ -41,7 +41,7 @@ def request_vertesprong(bvo_naam: str):
         select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
                Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.Vertesprong_1,
                Han.Vertesprong_2, Han.Vertesprong_beste
-               )
+               ).where(Account.id == Han.bvo_naam)
     ))
 
 
@@ -51,7 +51,7 @@ def request_sprint(bvo_naam: str):
         select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
                Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.X10_meter_sprint_beste,
                Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
-               )
+               ).where(Account.id == Han.bvo_naam)
     ))
 
 
@@ -99,7 +99,7 @@ def request_change_of_direction(bvo_naam: str):
         select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
                Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte,
                Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
-               Han.CoD_rechts_beste)
+               Han.CoD_rechts_beste).where(Account.id == Han.bvo_naam)
     ))
 
 
@@ -111,7 +111,7 @@ def request_algemene_motoriek(bvo_naam: str):
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal
-               ).where(Han.bvo_naam == bvo_naam)
+               ).where(Account.id == Han.bvo_naam and Han.bvo_naam == bvo_naam)
     ))
 
 

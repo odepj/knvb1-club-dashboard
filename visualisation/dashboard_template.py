@@ -1,7 +1,6 @@
 import dash
 from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
-import itertools
 import pandas as pd
 import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
@@ -9,30 +8,13 @@ from database.database import request_vertesprong, request_sprint, request_chang
 from flask import session
 from visualisation import algemene_motoriek_chart
 import plotly.graph_objs as go
-from visualisation.util_functions import calculate_mean_result_by_date, add_figure_rangeslider
+from visualisation.dashboard_template_functions import calculate_mean_result_by_date, add_figure_rangeslider, \
+    filter_bloc_tests
 
 # this list contains the names of all the unique bvo's in the database
 BVO_LIST = request_bvo()
 META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_naam', 'display_name', 'speler_id',
                 'geboortedatum', 'Staande_lengte']
-
-
-def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
-    # This dictionary will be used to lookup BLOC-test specific rows
-    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
-               "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
-               "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2",
-                                         "Zijwaarts_verplaatsen_totaal"],
-               "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2",
-                                        "Oog_hand_coordinatie_totaal"]}
-
-    # remove all the bloc_tests from the columns dictionary if it exists in selection
-    for bloc_test in bloc_test_selection:
-        columns.pop(bloc_test)
-
-    remaining_columns = list(columns.values())
-    dropped_list = list(itertools.chain.from_iterable(remaining_columns))
-    return dashboard_data.drop(dropped_list, axis=1)
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -250,33 +232,34 @@ def init_callbacks(dash_app):
 
         return dashboard_data.to_dict(orient='records')
 
-    # This callback is used to dynamically create a line chart
+    # TODO ############## This callback is used to dynamically create a line chart #################
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("filter_output", "children")])
-    # Input("statistics", "value"),])
-    def create_line_chart(dashboard_data):
+                       [Input("filter_output", "children"),
+                        Input("statistics", "value")])
+    def create_line_chart(dashboard_data, statistics):
         bvo_id = session.get('id')
+        print('line-graph:', statistics)
         dashboard_data = pd.DataFrame(dashboard_data)
 
         # #Get the columns that have the actual measurement
         measurement_columns = list(set(dashboard_data.columns.values).symmetric_difference(META_COLUMNS))
         measurement = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])
 
-        # place code for creating the line chart here
-        mean = calculate_mean_result_by_date(dashboard_data.drop_duplicates(), measurement)
-        club = calculate_mean_result_by_date(dashboard_data[dashboard_data['bvo_naam'] == bvo_id].drop_duplicates(),
+        # This has got to go
+        mean = calculate_mean_result_by_date(dashboard_data, measurement)
+        club = calculate_mean_result_by_date(dashboard_data[dashboard_data['bvo_naam'] == bvo_id],
                                              measurement)
 
         bundled_df: list[pd.DataFrame] = [club, mean]
 
         fig = go.Figure()
-        for idx, df in enumerate(bundled_df):
+        for df in bundled_df:
             x = df.index
             for column in measurement:
+                y = df[column]
                 column_name = column.replace('_', ' ')
                 bvo_name = df['bvo_naam'].values[0]
                 name = f'{bvo_name} - {column_name}'
-                y = df[column]
                 fig.add_trace(go.Scatter(x=x, y=y, name=name))
 
         fig.update_layout(
@@ -288,11 +271,19 @@ def init_callbacks(dash_app):
         fig = add_figure_rangeslider(fig)
         return fig
 
+    # TODO: ################### INFO CARD ####################
     @dash_app.callback(Output("overview", "children"),
                        [Input("line_chart", "selectedData"),
                         Input("line_chart", "relayoutData")])
-    def update_line_chart(selectedData, relayoutData):
+    def update_line_chart_info_card(selectedData, relayoutData):
         return f'{selectedData}, {relayoutData}'
+
+    # TODO: ########## LINE-CHART-SPECIFIC-FILTERS ###########
+    # @dash_app.callback(Output("overview", "children"),
+    #                    [Input("line_chart", "selectedData"),
+    #                     Input("line_chart", "relayoutData")])
+    # def update_line_chart(selectedData, relayoutData):
+    #     return f'{selectedData}, {relayoutData}'
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
