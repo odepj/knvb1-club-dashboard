@@ -1,5 +1,13 @@
 import itertools
+import re
+from functools import reduce
+
 import pandas as pd
+import plotly_express as px
+from matplotlib import pyplot as plt
+
+META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_naam', 'display_name', 'speler_id',
+                'geboortedatum', 'Staande_lengte']
 
 
 def calculate_delta(value: pd.Series, from_, to_):
@@ -15,15 +23,17 @@ def nearest(items, pivot):
 
 
 def calculate_mean_result_by_date(df: pd.DataFrame, columns):
-    if df['bvo_naam'].nunique() > 1:
-        bvo_naam = 'mean'
-    else:
-        bvo_naam = df['bvo_naam'].drop_duplicates().values[0]
+    lichting = pd.to_datetime(df["geboortedatum"])
+    df['lichting'] = lichting.dt.year
 
-    df_mean = df.groupby(['Testdatum', 'reeks_naam'])[columns].mean(numeric_only=False)
-    df_mean['bvo_naam'] = bvo_naam
-    df_mean['reeks_naam'], df_mean.index = df_mean.index.droplevel(0), df_mean.index.droplevel(1)
+    df_mean: pd.DataFrame = df.groupby(['Testdatum', 'reeks_naam', 'lichting'])[columns].mean(numeric_only=False)
+    df_mean = df_mean.reset_index()
+    df_mean.index = df_mean['Testdatum']
     return df_mean
+
+
+def get_colormap(index_selector) -> str:
+    return f"{px.colors.qualitative.Set1[index_selector]}"
 
 
 def add_figure_rangeslider(fig):
@@ -73,3 +83,21 @@ def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -
     dropped_list = list(itertools.chain.from_iterable(remaining_columns))
     return dashboard_data.drop(dropped_list, axis=1)
 
+
+def filter_measurements(dashboard_data: pd.DataFrame, measurement_selection: list) -> pd.DataFrame:
+    print(measurement_selection)
+    dropped_list = list(set(get_measurement_columns(dashboard_data)).symmetric_difference(measurement_selection))
+    return dashboard_data.copy().drop(dropped_list, axis=1)
+
+
+def rename_column(column) -> str:
+    repls = ('_', ' '), ('totaal', ''), ('beste', ''), ('X', '')
+    return reduce(lambda a, kv: a.replace(*kv), repls, column)
+
+
+def get_measurement_columns(df: pd.DataFrame) -> list[str]:
+    # #Get the columns that have the actual measurement
+    measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
+    measurements = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])
+    measurements.reverse()
+    return measurements
