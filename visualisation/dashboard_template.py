@@ -4,9 +4,10 @@ import dash_bootstrap_components as dbc
 import itertools
 import pandas as pd
 import regex as re
-from database.database import request_vertesprong, request_sprint, request_change_of_direction, request_algemene_motoriek, request_bvo
+from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
+    request_algemene_motoriek, request_bvo
 from flask import session
-from visualisation import algemene_motoriek_chart
+from visualisation import algemene_motoriek_chart, sprint_boxplot
 
 # this list contains the names of all the unique bvo's in the database
 bvo_list = request_bvo()
@@ -14,10 +15,12 @@ bvo_list = request_bvo()
 
 def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
     # This dictionary will be used to lookup BLOC-test specific rows
-    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"], 
-        "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
-        "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2", "Zijwaarts_verplaatsen_totaal"],
-        "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2", "Oog_hand_coordinatie_totaal"]}
+    columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
+               "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
+               "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2",
+                                         "Zijwaarts_verplaatsen_totaal"],
+               "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2",
+                                        "Oog_hand_coordinatie_totaal"]}
 
     # remove all the bloc_tests from the columns dictionary if it exists in selection
     for bloc_test in bloc_test_selection:
@@ -37,7 +40,7 @@ def init_dashboard_template(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-     # The benchmark dropdown menu is put in this 'benchmark' variable below
+    # The benchmark dropdown menu is put in this 'benchmark' variable below
     benchmark = dbc.Card([
         dbc.CardHeader("Benchmark", class_name="text-center fw-bold",
                        style={"background-color": "#FF9900"}),
@@ -52,29 +55,29 @@ def init_dashboard_template(server):
     ])
 
     statistics = dbc.Card([
-            dbc.CardHeader("Statistiek", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [dbc.Checklist(
-                    id="statistics",
-                    options=[
-                        {"label": "Gemiddelde", "value": "gemiddelde"},
-                        {"label": "Mediaan", "value": "mediaan"},
-                        {"label": "Boxplot", "value": "boxplot"},
-                        {"label": "Individuen", "value": "individuen"},
-                    ],
-                    value=["mediaan", 
-                        "boxplot", "individuen"],
-                    label_checked_style={"color": "green"},
-                    input_style={"backgroundColor": "red"},
-                    input_checked_style={
-                        "backgroundColor": "green",
-                        "borderColor": "#green",
-                    },
-                ),
+        dbc.CardHeader("Statistiek", class_name="text-center fw-bold",
+                       style={"background-color": "#FF9900"}),
+        dbc.CardBody(
+            [dbc.Checklist(
+                id="statistics",
+                options=[
+                    {"label": "Gemiddelde", "value": "gemiddelde"},
+                    {"label": "Mediaan", "value": "mediaan"},
+                    {"label": "Boxplot", "value": "boxplot"},
+                    {"label": "Individuen", "value": "individuen"},
                 ],
+                value=["mediaan",
+                       "boxplot", "individuen"],
+                label_checked_style={"color": "green"},
+                input_style={"backgroundColor": "red"},
+                input_checked_style={
+                    "backgroundColor": "green",
+                    "borderColor": "#green",
+                },
             ),
-        ], class_name="mb-4")
+            ],
+        ),
+    ], class_name="mb-4")
 
     # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
     dash_app.layout = dbc.Container(
@@ -87,8 +90,9 @@ def init_dashboard_template(server):
 
             dbc.Row(
                 [
-                    dbc.Col([html.Div(id="bloc_test_selection"), html.Div(id="filter_selection"), statistics, benchmark],
-                            width=2, style={"height": "10rem"}),
+                    dbc.Col(
+                        [html.Div(id="bloc_test_selection"), html.Div(id="filter_selection"), statistics, benchmark],
+                        width=2, style={"height": "10rem"}),
                     dbc.Col(html.Div(id="show_boxplot"), width=10),
                 ],
                 class_name="align-items-stretch"),
@@ -96,7 +100,7 @@ def init_dashboard_template(server):
             dbc.Row(
                 [
                     dbc.Col(dcc.Graph(id="line_chart",
-                            responsive=True), width=10),
+                                      responsive=True), width=10),
                 ],
                 class_name="justify-content-end"
             ),
@@ -141,7 +145,6 @@ def init_callbacks(dash_app):
         else:
             return dict()
 
-
     # This callback is used to dynamically return the bloc test selection menu
     @dash_app.callback(
         Output('bloc_test_selection', 'children'),
@@ -158,7 +161,7 @@ def init_callbacks(dash_app):
                     id="bloc_test_selection",
                     options=[
                         {"label": "Evenwichtsbalk",
-                            "value": "Evenwichtsbalk"},
+                         "value": "Evenwichtsbalk"},
                         {"label": "Zijwaarts springen",
                          "value": "Zijwaarts springen"},
                         {"label": "Zijwaarts verplaatsen",
@@ -166,8 +169,8 @@ def init_callbacks(dash_app):
                         {"label": "Hand-oog coördinatie",
                          "value": "Hand-oog coördinatie"},
                     ],
-                    value=["Evenwichtsbalk", "Zijwaarts springen", 
-                        "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
+                    value=["Evenwichtsbalk", "Zijwaarts springen",
+                           "Zijwaarts verplaatsen", "Hand-oog coördinatie"],
                     label_checked_style={"color": "green"},
                     input_style={"backgroundColor": "red"},
                     input_checked_style={
@@ -178,7 +181,6 @@ def init_callbacks(dash_app):
                 ],
             ),
         ], class_name="mb-4")
-
 
     # This callback is used to dynamically return the filters selection menu
     @dash_app.callback(
@@ -217,13 +219,13 @@ def init_callbacks(dash_app):
             ),
         ], class_name="mb-4")
 
-    @dash_app.callback(Output("filter_output", "children"), 
-        [Input("dashboard_data", "children"),
-        Input("teams", "value"),
-        Input("lichting", "value"),
-        Input("seizoen", "value"),
-        Input("bvo", "value"),
-        Input("bloc_test_selection", "value")])
+    @dash_app.callback(Output("filter_output", "children"),
+                       [Input("dashboard_data", "children"),
+                        Input("teams", "value"),
+                        Input("lichting", "value"),
+                        Input("seizoen", "value"),
+                        Input("bvo", "value"),
+                        Input("bloc_test_selection", "value")])
     def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
@@ -236,10 +238,10 @@ def init_callbacks(dash_app):
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
         if bloc_test_selection is not None:
             dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
-            
+
         return dashboard_data.to_dict(orient='records')
 
-     # This callback is used to dynamically return the bloc test chart
+    # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
         [Input("selected_dashboard", "children"), Input("filter_output", "children")])
@@ -253,8 +255,7 @@ def init_callbacks(dash_app):
 
         figure = algemene_motoriek_chart.create_chart(
             pd.DataFrame(dashboard_data))
-        return dcc.Graph(figure=figure, responsive=True)    
-
+        return dcc.Graph(figure=figure, responsive=True)
 
     # This callback is used to dynamically show the boxplot
     @dash_app.callback(
@@ -269,22 +270,27 @@ def init_callbacks(dash_app):
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
-        [Input("filter_output", "children")])
-    def create_boxplot(dashboard_data):
+        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
+    def create_boxplot(selected_dashboard, dashboard_data):
         # place code for creating the boxplot here
         # var dashboard data contains a dict of the current dashboard data DataFrame
-
         # return created plot here as callback output
-        return {}
-
+        if selected_dashboard != "sprint":
+            return
+        figure = sprint_boxplot.create_box(
+            pd.DataFrame(dashboard_data))
+        return figure
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(
         Output("line_chart", "figure"),
-        [Input("filter_output", "children")])
-    def create_line_chart(dashboard_data):
+        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
+    def create_line_chart(selected_dashboard, dashboard_data):
         # place code for creating the line chart here
         # var dashboard data contains a dict of the current dashboard data DataFrame
-
+        if selected_dashboard != "sprint":
+            return
+        figure = sprint_boxplot.create_line_graph(
+            pd.DataFrame(dashboard_data))
         # return created chart here as callback output
-        return {}
+        return figure
