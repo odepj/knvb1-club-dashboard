@@ -159,9 +159,10 @@ def init_callbacks(dash_app):
     # This callback is used to dynamically return the filters selection menu
     @dash_app.callback(
         Output('filter_selection', 'children'),
-        [Input('dashboard_data', 'children')])
-    def filter_selection(dashboard_data) -> dbc.Card:
-        dashboard_data = pd.DataFrame(dashboard_data)
+        [Input('dashboard_data', 'children'),
+         Input('filter_output', 'children')])
+    def filter_selection(dashboard_data, filter_output) -> dbc.Card:
+        dashboard_data = pd.DataFrame(dashboard_data) if filter_output is None else pd.DataFrame(filter_output)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
         return dbc.Card([
@@ -256,10 +257,11 @@ def init_callbacks(dash_app):
 
     @dash_app.callback(
         Output('measurement_selection', 'children'),
-        [Input('filter_output', 'children')])
-    def measurement_selection(dashboard_data):
-        # if selected_dashboard == "algemene_motoriek":
-        #     return None
+        [Input('dashboard_data', 'children'),
+         Input('selected_dashboard', 'children')])
+    def measurement_selection(dashboard_data, selected_dashboard):
+        if selected_dashboard == "algemene_motoriek":
+            return None
 
         dashboard_data = pd.DataFrame(dashboard_data)
         if dashboard_data.empty:
@@ -267,13 +269,12 @@ def init_callbacks(dash_app):
             raise dash.exceptions.PreventUpdate
 
         measurements = get_measurement_columns(dashboard_data)
+        options = [{"label": f"{rename_column(entry)}", "value": f"{entry}"} for entry in measurements]
 
         session_statistics = retrieve_filter_from_session("measurement_selection")
-        print(measurement_selection)
         if session_statistics is None:
             session_statistics = measurements
-            save_filter_to_session("measurement_selection", measurements)
-        options = [{"label": f"{rename_column(entry)}", "value": f"{entry}"} for entry in measurements]
+        save_filter_to_session("measurement_selection", session_statistics)
 
         return dbc.Card([
             dbc.CardHeader("Metingen", class_name="text-center fw-bold",
@@ -339,7 +340,6 @@ def init_callbacks(dash_app):
     # TODO ############## This callback is used to dynamically create a line chart #################
     @dash_app.callback(Output("line_chart", "figure"),
                        [Input("filter_output", "children")])
-    # Input("statistics", "value"),])
     def create_line_chart(dashboard_data):
         dashboard_data = pd.DataFrame(dashboard_data)
         if dashboard_data.empty:
@@ -355,7 +355,7 @@ def init_callbacks(dash_app):
 
         bundled_df = [df for _, df in result.groupby('lichting')]
 
-        line_dashes = ['solid', 'dot', 'longdash', 'dashdot', 'longdashdot']
+        line_dashes = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
 
         layout = go.Layout(autosize=True,
                            height=625,
@@ -386,8 +386,12 @@ def init_callbacks(dash_app):
                     line=line,
                 ))
 
-        yaxis_title = 'Totaal score (punten)' if dashboard_data[
-                                                     measurements[0]].dtype == int else 'Beste of totaal resultaat'
+        if len(measurements) > 0:
+            predicate = dashboard_data[measurements[0]].dtype == int
+            yaxis_title = 'Totaal score (punten)' if predicate else 'Beste of totaal resultaat'
+        else:
+            yaxis_title = 'Geen selectie'
+
         fig.update_layout(
             xaxis=fix_labels(dashboard_data),
             yaxis_title=yaxis_title,
