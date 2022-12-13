@@ -85,14 +85,24 @@ def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -
 
 
 def filter_measurements(dashboard_data: pd.DataFrame, measurement_selection: list) -> pd.DataFrame:
-    print(measurement_selection)
     dropped_list = list(set(get_measurement_columns(dashboard_data)).symmetric_difference(measurement_selection))
     return dashboard_data.copy().drop(dropped_list, axis=1)
 
 
 def rename_column(column) -> str:
-    repls = ('_', ' '), ('totaal', ''), ('beste', ''), ('X', '')
-    return reduce(lambda a, kv: a.replace(*kv), repls, column)
+    names = {
+        'X10_meter_sprint_beste': '10 Meter sprint',
+        'X20_meter_sprint_beste': '20 Meter sprint',
+        'X30_meter_sprint_beste': '30 Meter sprint',
+        'Oog_hand_coordinatie_totaal': "Hand-oog coördinatie",
+        'Zijwaarts_springen_totaal': "Zijwaarts springen",
+        'Zijwaarts_verplaatsen_totaal': "Zijwaarts verplaatsen",
+        'Balance_beam_totaal': "Evenwichtsbalk",
+        'CoD_links_beste': 'COD links',
+        'CoD_rechts_beste': 'COD rechts',
+        'Vertesprong_beste': 'Vertesprong',
+    }
+    return names[column]
 
 
 def get_measurement_columns(df: pd.DataFrame) -> list[str]:

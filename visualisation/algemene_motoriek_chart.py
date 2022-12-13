@@ -17,7 +17,7 @@ test_names = {"Balance_beam_totaal": "Evenwichtsbalk",
 # This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
     team_player_counts = dataframe.groupby("team_naam")["speler_id"].nunique().to_dict()
-    dataframe = dataframe.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).agg('sum').reset_index()
+    dataframe = dataframe.groupby(["team_naam", "reeks_naam", "bvo_naam", "display_name"]).sum().reset_index()
     dataframe["team_player_count"] = dataframe["team_naam"].map(team_player_counts)
     dataframe.set_index(list(dataframe.select_dtypes(include="object").columns.values), inplace=True)
     
