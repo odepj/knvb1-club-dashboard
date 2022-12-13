@@ -32,6 +32,31 @@ def calculate_mean_result_by_date(df: pd.DataFrame, columns):
     return df_mean
 
 
+def aggregate_measurement_by_team_result(dashboard_data: pd.DataFrame, statistics: list) -> pd.DataFrame:
+    df = dashboard_data.copy()
+
+    # Columns to group by
+    group = ['team_naam', 'reeks_naam']
+    measurements = get_measurement_columns(df)
+    columns = measurements + group
+
+    # Group once not twice
+    grouped = df[columns].groupby(group)
+    aggregators = set(statistics) - (set(statistics) - {'gemiddelde', 'mediaan'})
+
+    for aggregator in aggregators:
+        if 'mediaan' == aggregator:
+            df_grouped: pd.DataFrame = grouped.median(numeric_only=True).reset_index()
+        else:
+            df_grouped: pd.DataFrame = grouped.mean(numeric_only=True).reset_index()
+
+        mapping = {column_name: column_name + f'.{aggregator}' for column_name in measurements}
+        result = df_grouped[columns].rename(columns=mapping)
+        df = pd.merge(left=df, right=result, how='inner')
+
+    return df
+
+
 def get_colormap(index_selector) -> str:
     return f"{px.colors.qualitative.Set1[index_selector]}"
 
@@ -89,7 +114,7 @@ def filter_measurements(dashboard_data: pd.DataFrame, measurement_selection: lis
     return dashboard_data.copy().drop(dropped_list, axis=1)
 
 
-def rename_column(column) -> str:
+def rename_column(column: str) -> str:
     names = {
         'X10_meter_sprint_beste': '10 Meter sprint',
         'X20_meter_sprint_beste': '20 Meter sprint',
@@ -102,7 +127,13 @@ def rename_column(column) -> str:
         'CoD_rechts_beste': 'COD rechts',
         'Vertesprong_beste': 'Vertesprong',
     }
-    return names[column]
+
+    column_suffix = None
+    if any(x in column for x in ['.mediaan', '.gemiddelde']):
+        column, column_suffix = column.split('.')
+
+    renamed_column = names[column]
+    return renamed_column if column_suffix is None else renamed_column + " " + column_suffix
 
 
 def get_measurement_columns(df: pd.DataFrame) -> list[str]:
@@ -111,3 +142,9 @@ def get_measurement_columns(df: pd.DataFrame) -> list[str]:
     measurements = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])
     measurements.reverse()
     return measurements
+
+
+def drop_mean_and_median_columns(df: pd.DataFrame) -> pd.DataFrame:
+    measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
+    columns_to_drop = [col for col in measurement_columns if any(x in col for x in ['.mediaan', '.gemiddelde'])]
+    return df.drop(columns_to_drop, axis=1)

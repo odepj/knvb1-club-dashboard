@@ -9,8 +9,9 @@ from flask import session
 from visualisation import algemene_motoriek_chart
 from visualisation.boxplot import create_box
 import plotly.graph_objs as go
-from visualisation.dashboard_template_functions import calculate_mean_result_by_date, add_figure_rangeslider, \
-    filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns
+from visualisation.dashboard_template_functions import calculate_mean_result_by_date, \
+    filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns, \
+    aggregate_measurement_by_team_result, drop_mean_and_median_columns
 
 # this list contains the names of all the unique bvo's in the database
 BVO_LIST = request_bvo()
@@ -63,6 +64,7 @@ def init_dashboard_template(server):
                         html.Div(id="measurement_selection"),
                         html.Div(id="statistics_selection"),
                         html.Div(id="benchmark_selection"),
+                        html.Div(id='bvo_alert'),
                     ],
                     style={"height": "10rem"}),
                 # Graphs
@@ -295,6 +297,19 @@ def init_callbacks(dash_app):
             ),
         ], class_name="mb-4")
 
+    @dash_app.callback(Output('bvo_alert', 'children'),
+                       Input('bvo', 'value'))
+    def show_alert(bvo):
+        if bvo is None:
+            return {}
+
+        return dbc.Alert("Functionaliteit niet beschikbaar!",
+                         color="danger",
+                         id="alert-fade",
+                         dismissable=True,
+                         style={'margin-top': '10px'}
+                         )
+
     @dash_app.callback(Output("filter_output", "children"),
                        [Input("dashboard_data", "children"),
                         Input("teams", "value"),
@@ -304,7 +319,8 @@ def init_callbacks(dash_app):
                         Input("bloc_test_selection", "value"),
                         Input("measurement_selection", "value"),
                         Input("statistics", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, measurement_selection, statistics):
+    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, measurement_selection,
+                    statistics: list):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
@@ -317,7 +333,7 @@ def init_callbacks(dash_app):
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
 
-        if bvo is not None:
+        if bvo == session.get('id'):
             team_naam = BVO_LIST[BVO_LIST["display_name"] == bvo]['bvo_naam'].values[0]
             dashboard_data = dashboard_data[dashboard_data["bvo_naam"] == team_naam]
 
@@ -326,6 +342,9 @@ def init_callbacks(dash_app):
 
         if measurement_selection is not None:
             dashboard_data = filter_measurements(dashboard_data, measurement_selection)
+
+        if any(item in ['gemiddelde', 'mediaan'] for item in statistics):
+            dashboard_data = aggregate_measurement_by_team_result(dashboard_data, statistics)
 
         save_filter_to_session("teams", teams)
         save_filter_to_session("lichting", lichting)
@@ -345,6 +364,8 @@ def init_callbacks(dash_app):
         if dashboard_data.empty:
             # PreventUpdate prevents ALL outputs updating
             raise dash.exceptions.PreventUpdate
+
+        dashboard_data = drop_mean_and_median_columns(dashboard_data)
 
         measurements = get_measurement_columns(dashboard_data)
         result = calculate_mean_result_by_date(dashboard_data, measurements)
@@ -399,15 +420,7 @@ def init_callbacks(dash_app):
             legend_title="Lichtingen",
             title_x=0.5
         )
-        # add_figure_rangeslider(fig)
         return fig
-
-    # ################### INFO CARD ####################
-    # @dash_app.callback(Output("overview", "children"),
-    #                    [Input("line_chart", "selectedData"),
-    #                     Input("line_chart", "relayoutData")])
-    # def update_line_chart_info_card(selectedData, relayoutData):
-    #     return f'{selectedData}, {relayoutData}'
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
