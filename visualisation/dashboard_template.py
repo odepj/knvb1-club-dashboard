@@ -369,10 +369,6 @@ def init_callbacks(dash_app):
         measurements = get_measurement_columns(dashboard_data)
         result = calculate_mean_result_by_date(dashboard_data, measurements)
 
-        # if len(result['team_naam'].unique()) < 2:
-        #     print('not updating:', result['team_naam'].unique())
-        #     raise dash.exceptions.PreventUpdate
-
         bundled_df = [df for _, df in result.groupby('lichting')]
 
         line_dashes = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
