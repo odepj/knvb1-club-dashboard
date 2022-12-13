@@ -265,32 +265,31 @@ def init_callbacks(dash_app):
         print(statistics)
 
         if "boxplot" in statistics:
-            return dcc.Graph(id="boxplot", responsive=True)
+            return dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"})
 
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
-        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
-    def create_boxplot(selected_dashboard, dashboard_data):
+        [Input("selected_dashboard", "children")],
+        [Input("statistics", "value")],
+        [Input("filter_output", "children")])
+    def create_boxplot(selected_dashboard, statistics, dashboard_data):
         # place code for creating the boxplot here
         # var dashboard data contains a dict of the current dashboard data DataFrame
         # return created plot here as callback output
         if selected_dashboard != "sprint":
             return
         figure = sprint_boxplot.create_box(
+            "all" if "individuen" in statistics else False,
             pd.DataFrame(dashboard_data))
         return figure
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(
         Output("line_chart", "figure"),
-        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
-    def create_line_chart(selected_dashboard, dashboard_data):
+        [Input("filter_output", "children")])
+    def create_line_chart(dashboard_data):
         # place code for creating the line chart here
         # var dashboard data contains a dict of the current dashboard data DataFrame
-        if selected_dashboard != "sprint":
-            return
-        figure = sprint_boxplot.create_line_graph(
-            pd.DataFrame(dashboard_data))
         # return created chart here as callback output
-        return figure
+        return {}
