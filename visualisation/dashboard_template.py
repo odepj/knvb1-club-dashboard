@@ -8,9 +8,12 @@ from database.database import request_vertesprong, request_sprint, request_chang
 from flask import session
 from visualisation import algemene_motoriek_chart
 import plotly.graph_objs as go
+
+from visualisation.boxplot import create_box
 from visualisation.dashboard_template_functions import calculate_mean_result_by_date, \
     filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns, \
     aggregate_measurement_by_team_result, drop_mean_and_median_columns, calculate_result_by_date
+from visualisation.sprint_boxplot import create_boxplot_function
 
 # this list contains the names of all the unique bvo's in the database
 BVO_LIST = request_bvo()
@@ -424,8 +427,7 @@ def init_callbacks(dash_app):
             xaxis=fix_labels(filter_output),
             yaxis_title=yaxis_title,
             xaxis_title='Meet moment',
-            legend_title="Lichtingen",
-            title_x=0.5
+            title_text="<b>Ontwikkeling lichtingen<b>"
         )
         return fig
 
