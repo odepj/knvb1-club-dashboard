@@ -6,7 +6,8 @@ import regex as re
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
     request_algemene_motoriek, request_bvo
 from flask import session
-from visualisation import algemene_motoriek_chart, boxplot
+from visualisation import algemene_motoriek_chart
+from visualisation.boxplot import create_box
 import plotly.graph_objs as go
 from visualisation.dashboard_template_functions import calculate_mean_result_by_date, add_figure_rangeslider, \
     filter_bloc_tests
@@ -314,21 +315,11 @@ def init_callbacks(dash_app):
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
-        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
-    def create_boxplot(dashboard_data, selected_dashboard, statistics):
-        if selected_dashboard != 'boxplot':
-            return 
-        figure= boxplot.create_box(
-            pd.DataFrame(dashboard_data))
-
+        [Input("filter_output", "children"), Input("selected_dashboard", "children")])
+    def create_boxplot(dashboard_data, selected_dashboard):
         if dashboard_data is None:
             raise dash.exceptions.PreventUpdate
+        
+        figure= create_box(pd.DataFrame(dashboard_data), selected_dashboard)
 
-        figure = boxplot.create_box(pd.DataFrame(dashboard_data))
-        return dcc.Graph(figure=figure, responsive=True) 
-    
-        # place code for creating the boxplot here
-        # var dashboard d, sata contains a dict of the current dashboard data DataFrame
-
-        # return created plot here as callback output
-        return {}
+        return figure
