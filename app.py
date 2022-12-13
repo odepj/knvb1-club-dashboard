@@ -60,9 +60,4 @@ def intro():
 
 
 if __name__ == "__main__":
-    # TODO: temporary, this disables the cluttering Flask HTTP logging
-    import logging
-
-    log = logging.getLogger('werkzeug')
-    log.setLevel(logging.ERROR)
     app.run(debug=True, host='0.0.0.0')
