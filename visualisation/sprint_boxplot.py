@@ -16,7 +16,8 @@ def create_boxplot_function(individuen, dataframe: pd.DataFrame) -> go.box:
             y=dataframe[column],
             name=column_name,
             boxpoints=individuen,
-            line=dict()
+            line=dict(),
+            showlegend=True
     ))
 
     for extra_column in extra_columns:
@@ -27,10 +28,11 @@ def create_boxplot_function(individuen, dataframe: pd.DataFrame) -> go.box:
         y=dataframe[extra_column],
         name=column_name,
         mode="markers",
-        marker=dict(size=80, symbol="line-ew", line=dict(width=2, color="red"))))
+        showlegend=True,
+        marker=dict(size=80, symbol="line-ew", line=dict(width=2, color="red")))),
     
-    fig.update_layout(title_text="<b>Sprint vergelijking van teams<b>", autosize=False, width=1400, height=2600)
+    fig.update_layout(title_text="<b>Sprint vergelijking van teams<b>", autosize=True, width=1400, height=2600)
     fig.update_layout(yaxis_title="sprint score")
     fig.update_layout(xaxis_title="team naam")
-
+    
     return fig

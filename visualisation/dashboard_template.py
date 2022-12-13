@@ -453,10 +453,15 @@ def init_callbacks(dash_app):
         # place code for creating the boxplot here
         # var dashboard data contains a dict of the current dashboard data DataFrame
         # return created plot here as callback output
+        if dashboard_data is None:
+            # PreventUpdate prevents ALL outputs updating
+            raise dash.exceptions.PreventUpdate
+
         if selected_dashboard != "sprint":
-            return create_box(pd.DataFrame(dashboard_data), selected_dashboard)
+            return create_box(
+                "all" if "individuen" in statistics else False,
+                pd.DataFrame(dashboard_data))
             
-        figure = create_boxplot_function(
+        return create_boxplot_function(
             "all" if "individuen" in statistics else False,
             pd.DataFrame(dashboard_data))
-        return figure
