@@ -4,7 +4,6 @@ import pandas as pd
 from database import session_factory, engine
 from database.models import Account, Han
 
-
 session = session_factory()
 
 
@@ -39,21 +38,27 @@ def request_bvo():
 # request vertesprong by team_name and bvo_id
 def request_vertesprong(bvo_naam: str):
     return pd.DataFrame(session.execute(
-        select(Han.speler_id, Han.Vertesprong_1, 
-            Han.Vertesprong_2, Han.Vertesprong_beste,
-            Han.team_naam, Han.Staande_lengte, Han.bvo_naam, 
-            Han.geboortedatum, Han.seizoen)
-        .where(Han.bvo_naam == bvo_naam)))
+        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
+               Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.Vertesprong_1,
+               Han.Vertesprong_2, Han.Vertesprong_beste
+               )
+        .where(Account.id == Han.bvo_naam)
+        .where(Han.bvo_naam == bvo_naam)
+
+    ))
 
 
 # request sprinten by team_name and bvo_id
 def request_sprint(bvo_naam: str):
     return pd.DataFrame(session.execute(
-        select(Han.speler_id, Han.X10_meter_sprint_beste, 
-            Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
-            Han.team_naam, Han.geboortedatum, Han.seizoen)
+        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
+               Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.X10_meter_sprint_beste,
+               Han.X20_meter_sprint_beste, Han.X30_meter_sprint_beste,
+               )
+        .where(Account.id == Han.bvo_naam)
         .where(Han.bvo_naam == bvo_naam)
     ))
+
 
 # request handoogcoordinatie by team_name and bvo_id
 def request_hand_oog_coordinatie(bvo_naam: str):
@@ -61,8 +66,8 @@ def request_hand_oog_coordinatie(bvo_naam: str):
         select(Han.speler_id, Han.Oog_hand_coordinatie_totaal,
                Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2,
                Han.Staande_lengte, Han.geboortedatum, Han.team_naam)
-        .where(Han.bvo_naam == bvo_naam)
-    ))
+        .where(Account.id == Han.bvo_naam))
+    )
 
 
 # request zijwaarts verplaatsen by team_name and bvo_id
@@ -81,8 +86,8 @@ def request_evenwichtsbalk():
 
 def request_evenwichtsbalk_sc_2():
     return pd.DataFrame(session.execute(
-        select(Han.speler_id, Han.bvo_naam, Han.Balance_Beam_6cm, Han.Balance_Beam_4_5cm, 
-        Han.Balance_Beam_3cm, Han.Balance_beam_totaal, Han.reeks_naam, Han.team_naam))
+        select(Han.speler_id, Han.bvo_naam, Han.Balance_Beam_6cm, Han.Balance_Beam_4_5cm,
+               Han.Balance_Beam_3cm, Han.Balance_beam_totaal, Han.reeks_naam, Han.team_naam))
     )
 
 
@@ -95,27 +100,32 @@ def request_zijwaarts_springen(bvo_naam: str):
 
 # request change of direction by team_name and bvo_id
 def request_change_of_direction(bvo_naam: str):
-    # return \
     return pd.DataFrame(session.execute(
-        select(Han.id, Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
-               Han.CoD_rechts_beste, Han.Staande_lengte, Han.team_naam, Han.bvo_naam, Han.geboortedatum, Han.seizoen)
-        .where(Han.bvo_naam == bvo_naam))
-    )
+        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
+               Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte,
+               Han.CoD_links_1, Han.CoD_links_2, Han.CoD_links_beste, Han.CoD_rechts_1, Han.CoD_rechts_2,
+               Han.CoD_rechts_beste)
+        .where(Account.id == Han.bvo_naam)
+        .where(Han.bvo_naam == bvo_naam)
+    ))
 
 
 def request_algemene_motoriek(bvo_naam: str):
     return pd.DataFrame(session.execute(
-        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.speler_id, Han.team_naam, Han.reeks_naam,
+        select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
+               Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte,
                Han.Balance_Beam_3cm, Han.Balance_Beam_4_5cm, Han.Balance_Beam_6cm, Han.Balance_beam_totaal,
                Han.Zijwaarts_springen_1, Han.Zijwaarts_springen_2, Han.Zijwaarts_springen_totaal,
                Han.Zijwaarts_verplaatsen_1, Han.Zijwaarts_verplaatsen_2, Han.Zijwaarts_verplaatsen_totaal,
-               Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal)
-        .where(Account.id == Han.bvo_naam and Han.bvo_naam == bvo_naam)
+               Han.Oog_hand_coordinatie_1, Han.Oog_hand_coordinatie_2, Han.Oog_hand_coordinatie_totaal
+               )
+        .where(Account.id == Han.bvo_naam)
+        .where(Han.bvo_naam == bvo_naam)
     ))
 
 
 def get_zijwaarts_springen():
     return pd.DataFrame(session.execute(
         select(Account.display_name, Han.bvo_naam, Han.team_naam, Han.reeks_naam, Han.Testdatum,
-              Han.Zijwaarts_springen_totaal)
+               Han.Zijwaarts_springen_totaal)
         .where(Account.id == Han.bvo_naam)))

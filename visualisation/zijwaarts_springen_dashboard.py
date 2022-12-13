@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 from flask import session
 
 from database.database import get_zijwaarts_springen
-from visualisation.util_functions import add_figure_rangeslider, calculate_delta, calculate_mean_result_by_date, nearest
+from visualisation.dashboard_template_functions import add_figure_rangeslider, calculate_delta, calculate_mean_result_by_date, nearest
 
 # Retrieve data from DB.
 data = get_zijwaarts_springen()
