@@ -37,7 +37,6 @@ def request_bvo():
 
 # request vertesprong by team_name and bvo_id
 def request_vertesprong(bvo_naam: str):
-    print(bvo_naam)
     return pd.DataFrame(session.execute(
         select(Han.id, Account.display_name, Han.geboortedatum, Han.bvo_naam, Han.seizoen, Han.Testdatum, Han.speler_id,
                Han.team_naam, Han.reeks_naam, Han.geboortedatum, Han.Staande_lengte, Han.Vertesprong_1,
