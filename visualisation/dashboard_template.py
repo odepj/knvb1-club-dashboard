@@ -3,11 +3,13 @@ from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
 import regex as re
+from visualisation import algemene_motoriek_chart
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
     request_algemene_motoriek, request_bvo
 from flask import session
 from visualisation import algemene_motoriek_chart
 from visualisation.boxplot import create_box
+from visualisation.sprint_boxplot import create_boxplot_function
 import plotly.graph_objs as go
 from visualisation.dashboard_template_functions import calculate_mean_result_by_date, \
     filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns, \
@@ -73,7 +75,7 @@ def init_dashboard_template(server):
                     children=[
                         html.Div(id="show_boxplot"),
                         dbc.Row(id='graph-container', class_name='d-flex justify-content-center',
-                                children=[dbc.Card(id='overview', class_name='col-10'), dcc.Graph(id="line_chart")]),
+                                children=[dcc.Graph(id="line_chart")]),
                         dbc.Col(html.Div(id="algemene_motoriek_graph")),
                     ]
                 ),
@@ -440,16 +442,22 @@ def init_callbacks(dash_app):
         [Input("statistics", "value")])
     def show_boxplot(statistics):
         if statistics is not None and "boxplot" in statistics:
-            return dcc.Graph(id="boxplot", responsive=True)
+            return dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"})
 
-    # This callback is used to dynamically create a boxplot
+# This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
-        [Input("filter_output", "children"), Input("selected_dashboard", "children")])
-    def create_boxplot(dashboard_data, selected_dashboard):
-        if dashboard_data is None:
-            raise dash.exceptions.PreventUpdate
-        
-        figure= create_box(pd.DataFrame(dashboard_data), selected_dashboard)
-
+        [Input("selected_dashboard", "children")],
+        [Input("statistics", "value")],
+        [Input("filter_output", "children")])
+    def create_boxplot(selected_dashboard, statistics, dashboard_data):
+        # place code for creating the boxplot here
+        # var dashboard data contains a dict of the current dashboard data DataFrame
+        # return created plot here as callback output
+        if selected_dashboard != "sprint":
+            return create_box(pd.DataFrame(dashboard_data), selected_dashboard)
+            
+        figure = create_boxplot_function(
+            "all" if "individuen" in statistics else False,
+            pd.DataFrame(dashboard_data))
         return figure
