@@ -10,7 +10,7 @@ from visualisation import algemene_motoriek_chart, sprint_boxplot
 import plotly.graph_objs as go
 from visualisation.dashboard_template_functions import calculate_mean_result_by_date, \
     filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns, \
-    aggregate_measurement_by_team_result, drop_mean_and_median_columns
+    aggregate_measurement_by_team_result, drop_mean_and_median_columns, calculate_result_by_date
 
 # this list contains the names of all the unique bvo's in the database
 BVO_LIST = request_bvo()
@@ -278,8 +278,7 @@ def init_callbacks(dash_app):
         save_filter_to_session("measurement_selection", session_statistics)
 
         return dbc.Card([
-            dbc.CardHeader("Metingen", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
+            dbc.CardHeader("Metingen", class_name="text-center fw-bold", style={"background-color": "#FF9900"}),
             dbc.CardBody(
                 [dbc.Checklist(
                     id="measurement_selection",
@@ -355,61 +354,73 @@ def init_callbacks(dash_app):
 
         return dashboard_data.to_dict(orient='records')
 
-    # TODO ############## This callback is used to dynamically create a line chart #################
+    # This callback is used to dynamically create a line chart
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("filter_output", "children")])
-    def create_line_chart(dashboard_data):
+                       [Input("dashboard_data", "children"),
+                        Input("filter_output", "children"),
+                        Input("statistics", "value")])
+    def create_line_chart(dashboard_data, filter_output, statistics):
         dashboard_data = pd.DataFrame(dashboard_data)
-        if dashboard_data.empty:
+        filter_output = drop_mean_and_median_columns(pd.DataFrame(filter_output))
+        additional_traces = list(set(statistics) - (set(statistics) - {'gemiddelde', 'mediaan'}))
+        if filter_output.empty:
             # PreventUpdate prevents ALL outputs updating
             raise dash.exceptions.PreventUpdate
+        if len(filter_output['team_naam'].unique()) == 1:
+            raise dash.exceptions.PreventUpdate
 
-        dashboard_data = drop_mean_and_median_columns(dashboard_data)
-
-        measurements = get_measurement_columns(dashboard_data)
-        result = calculate_mean_result_by_date(dashboard_data, measurements)
-
+        measurements = get_measurement_columns(filter_output)
+        result = calculate_mean_result_by_date(filter_output, measurements)
         bundled_df = [df for _, df in result.groupby('lichting')]
+        df_mean_median = [(calculate_result_by_date(dashboard_data, measurements, statistic), statistic) for statistic
+                          in additional_traces]
 
-        line_dashes = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
+        fig = go.Figure(layout=go.Layout(autosize=True, height=625))
 
-        layout = go.Layout(autosize=True,
-                           height=625,
-                           margin=go.layout.Margin(l=50, r=50, b=100, t=100, pad=4)
-                           )
-        fig = go.Figure(layout=layout)
-        for idx, df_lichting in enumerate(bundled_df):
+        # Generate the traces for statistics
+        dash_dict = {'gemiddelde': 'solid', 'mediaan': 'dot'}
+        index = bundled_df[0].index
+        for idx, tupy in enumerate(df_mean_median):
+            df, statistic = tupy
+            df = df[df.index.isin(index)]
             for jdx, measurement in enumerate(measurements):
-                x = df_lichting.index
-                y = df_lichting[measurement]
                 column_name = rename_column(measurement)
-
-                name = str(df_lichting['lichting'].values[0])
-                legendgroup = column_name
-                legendgrouptitle = dict(text=column_name)
-                mode = 'lines+markers'
-                # marker = dict(color=)
-                line = dict(color=get_colormap(idx), dash=line_dashes[jdx], width=3)
                 fig.add_trace(go.Scatter(
-                    x=x,
-                    y=y,
-                    name=name,
-                    legendgroup=legendgroup,
-                    legendgrouptitle=legendgrouptitle,
-                    mode=mode,
-                    # marker=marker,
+                    x=df.index,
+                    y=df[measurement],
+                    name=statistic,
+                    legendgroup=column_name,
+                    legendgrouptitle=dict(text=column_name),
+                    mode='lines+markers',
                     line_shape="spline",
-                    line=line,
+                    line=dict(color='black', dash=dash_dict[statistic], width=3),
+                ))
+
+        # Generate traces for lichtingen
+        dash_list = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
+        for idx, df_lichting in enumerate(bundled_df):
+            name = str(df_lichting['lichting'].values[0])
+            for jdx, measurement in enumerate(measurements):
+                column_name = rename_column(measurement)
+                fig.add_trace(go.Scatter(
+                    x=df_lichting.index,
+                    y=df_lichting[measurement],
+                    name=name,
+                    legendgroup=column_name,
+                    legendgrouptitle=dict(text=column_name),
+                    mode='lines+markers',
+                    line_shape="spline",
+                    line=dict(color=get_colormap(idx), dash=dash_list[jdx], width=3),
                 ))
 
         if len(measurements) > 0:
-            predicate = dashboard_data[measurements[0]].dtype == int
+            predicate = filter_output[measurements[0]].dtype == int
             yaxis_title = 'Totaal score (punten)' if predicate else 'Beste of totaal resultaat'
         else:
             yaxis_title = 'Geen selectie'
 
         fig.update_layout(
-            xaxis=fix_labels(dashboard_data),
+            xaxis=fix_labels(filter_output),
             yaxis_title=yaxis_title,
             xaxis_title='Meet moment',
             legend_title="Lichtingen",
@@ -457,4 +468,3 @@ def init_callbacks(dash_app):
             "all" if "individuen" in statistics else False,
             pd.DataFrame(dashboard_data))
         return figure
-
