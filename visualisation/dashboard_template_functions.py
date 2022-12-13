@@ -1,10 +1,6 @@
 import itertools
-import re
-from functools import reduce
-
 import pandas as pd
 import plotly_express as px
-from matplotlib import pyplot as plt
 
 META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_naam', 'display_name', 'speler_id',
                 'geboortedatum', 'Staande_lengte']
@@ -30,6 +26,16 @@ def calculate_mean_result_by_date(df: pd.DataFrame, columns):
     df_mean = df_mean.reset_index()
     df_mean.index = df_mean['Testdatum']
     return df_mean
+
+
+def calculate_result_by_date(df: pd.DataFrame, columns, groupingBy) -> pd.DataFrame:
+    grouped = df.groupby(['Testdatum', 'reeks_naam'])[columns]
+    if 'mediaan' == groupingBy:
+        df_grouped: pd.DataFrame = grouped.median(numeric_only=True).reset_index()
+    else:
+        df_grouped: pd.DataFrame = grouped.mean(numeric_only=True).reset_index()
+    df_grouped.index = df_grouped['Testdatum']
+    return df_grouped
 
 
 def aggregate_measurement_by_team_result(dashboard_data: pd.DataFrame, statistics: list) -> pd.DataFrame:
