@@ -407,7 +407,7 @@ def init_callbacks(dash_app):
 
         if len(measurements) > 0:
             predicate = dashboard_data[measurements[0]].dtype == int
-            yaxis_title = 'Totaal score (punten)' if predicate else 'Beste of totaal resultaat'
+            yaxis_title = 'Totaal score (punten)' if predicate else 'Beste van totaal resultaat'
         else:
             yaxis_title = 'Geen selectie'
 
@@ -416,8 +416,7 @@ def init_callbacks(dash_app):
             yaxis_title=yaxis_title,
             xaxis_title='Meet moment',
             legend_title="Lichtingen",
-            title_x=0.5
-        )
+            title_text="<b>Ontwikkeling lichtingen<b>")
         return fig
 
     # This callback is used to dynamically return the bloc test chart

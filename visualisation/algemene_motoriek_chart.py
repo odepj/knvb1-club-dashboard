@@ -32,7 +32,7 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
     # Get the filtered sum data, columns containing total values and club name
     filtered_data = _calculate_sum(dataframe).round(decimals=2)
     total_columns = filtered_data.filter(regex='totaal').columns
-    club = filtered_data["display_name"].get(0, "Geen club beschikbaar")
+    #club = filtered_data["display_name"].get(0, "Geen club beschikbaar")
 
     # Get all the details on demand columns from the columns dictionary that are not in the total_columns
     # TEMPORARY solution, please check algemene_dashboard.py for the dynamic version of these lines of code
@@ -55,10 +55,10 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
 
     # Create a bar chart using the filtered data and add additional styling and hover information
     fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                 title=f"BLOC-test totaal score spelers per team voor uw club: {club}",)
+                 title="<b>Opbouw scores BLOC test<b>",)
 
     fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
-                      barmode='stack', legend_title="BLOC-testen", title_x=0.5)
+                      barmode='stack', legend_title="BLOC-testen")
 
     #fig.update_traces(hovertemplate=hover_template)
 
