@@ -1,6 +1,7 @@
 import pandas as pd
 import plotly.express as px
-pd.options.mode.chained_assignment = None 
+
+from visualisation.dashboard_template_functions import drop_mean_and_median_columns
 
 # This dictionary will be used to lookup BLOC-test specific rows
 columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
@@ -14,6 +15,7 @@ test_names = {"Balance_beam_totaal": "Evenwichtsbalk",
               "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen",
               "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie"}
 
+
 # This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
     team_player_counts = dataframe.groupby("team_naam")["speler_id"].nunique().to_dict()
@@ -25,6 +27,8 @@ def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
 
 
 def create_chart(dataframe: pd.DataFrame) -> px.bar:
+    dataframe = drop_mean_and_median_columns(dataframe)
+
     # Get the filtered sum data, columns containing total values and club name
     filtered_data = _calculate_sum(dataframe).round(decimals=2)
     total_columns = filtered_data.filter(regex='totaal').columns
