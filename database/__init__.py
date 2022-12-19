@@ -3,10 +3,12 @@ Initialization of database using ORM
 """
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+import os
 
 
 connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
-connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format('tiggele', 'h05$rzZA$.I3084I', 'oege.ie.hva.nl', 'ztiggele')
+connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format(os.getenv('MYSQL_USER'), os.getenv(
+    'MYSQL_PASSWORD'), os.getenv('MYSQL_HOST'), os.getenv('MYSQL_DB'))
 
 # Echo=True enables logging
 engine = create_engine(connect_string, connect_args=connect_args, echo=False)
