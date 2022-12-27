@@ -1,10 +1,13 @@
 """
 Initialization of database using ORM
 """
-from sqlalchemy import create_engine
-from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
 import os
 
+from sqlalchemy import create_engine
+from sqlalchemy.orm import scoped_session, sessionmaker, declarative_base
+from dotenv import load_dotenv
+
+load_dotenv()
 
 connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
 connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format(os.getenv('MYSQL_USER'), os.getenv(

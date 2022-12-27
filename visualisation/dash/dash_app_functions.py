@@ -1,4 +1,5 @@
 import itertools
+
 import pandas as pd
 import plotly_express as px
 
@@ -94,6 +95,17 @@ def add_figure_rangeslider(fig):
             ),
             type="date"
         )
+    )
+
+
+def fix_labels(df: pd.DataFrame) -> dict:
+    df_ticktext = df[['seizoen', 'reeks_naam']].drop_duplicates()
+    ticktext = [f"""{row.seizoen.removeprefix('20')}, {row.reeks_naam}""" for row in df_ticktext.itertuples()]
+    tickvals = df['Testdatum'].unique()
+    return dict(
+        tickmode='array',
+        tickvals=tickvals,
+        ticktext=ticktext  # tuple van (23/24 - na/voorjaar)
     )
 
 

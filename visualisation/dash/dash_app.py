@@ -1,19 +1,13 @@
 import dash
-from dash import html, Input, Output, dcc
 import dash_bootstrap_components as dbc
 import pandas as pd
 import regex as re
+from dash import html, Input, Output, dcc
+from flask import session
+
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
     request_algemene_motoriek, request_bvo
-from flask import session
-from visualisation import algemene_motoriek_chart
-import plotly.graph_objs as go
-
-from visualisation.boxplot import create_box
-from visualisation.dashboard_template_functions import calculate_mean_result_by_date, \
-    filter_bloc_tests, get_colormap, rename_column, filter_measurements, get_measurement_columns, \
-    aggregate_measurement_by_team_result, drop_mean_and_median_columns, calculate_result_by_date
-from visualisation.sprint_boxplot import create_boxplot_function
+from visualisation.dash.dash_app_graphs import *
 
 # this list contains the names of all the unique bvo's in the database
 BVO_LIST = request_bvo()
@@ -27,17 +21,6 @@ def retrieve_filter_from_session(key: str):
     return session.get(key)
 
 
-def fix_labels(df: pd.DataFrame) -> dict:
-    df_ticktext = df[['seizoen', 'reeks_naam']].drop_duplicates()
-    ticktext = [f"""{row.seizoen.removeprefix('20')}, {row.reeks_naam}""" for row in df_ticktext.itertuples()]
-    tickvals = df['Testdatum'].unique()
-    return dict(
-        tickmode='array',
-        tickvals=tickvals,
-        ticktext=ticktext  # tuple van (23/24 - na/voorjaar)
-    )
-
-
 # This method is used by the app.py to initialize the Dash dashboard in Flask
 # This workaround allows us to use Dash inside a Flask app by using its own route
 def init_dashboard_template(server):
@@ -47,7 +30,6 @@ def init_dashboard_template(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-    # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
     dash_app.layout = dbc.Container(
         fluid=True, children=[
             # get the current selected url and store the selected dashboard in a dcc.Store object
@@ -73,7 +55,10 @@ def init_dashboard_template(server):
                 dbc.Col(
                     width=10,
                     children=[
-                        html.Div(id="show_boxplot"),
+                        html.Div(id="show_boxplot", children=[
+                            dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"}),
+                        ]),
+
                         dbc.Row(id='graph-container', class_name='d-flex justify-content-center',
                                 children=[dcc.Graph(id="line_chart")]),
                         dbc.Col(html.Div(id="algemene_motoriek_graph")),
@@ -81,6 +66,7 @@ def init_dashboard_template(server):
                 ),
             ])
         ])
+    # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
 
     # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
     init_callbacks(dash_app)
@@ -322,7 +308,7 @@ def init_callbacks(dash_app):
                         Input("measurement_selection", "value"),
                         Input("statistics", "value")])
     def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, measurement_selection,
-                    statistics: list):
+                    statistics: list) -> list[dict]:
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
@@ -364,72 +350,14 @@ def init_callbacks(dash_app):
                         Input("filter_output", "children"),
                         Input("statistics", "value")])
     def create_line_chart(dashboard_data, filter_output, statistics):
-        dashboard_data = pd.DataFrame(dashboard_data)
-        filter_output = drop_mean_and_median_columns(pd.DataFrame(filter_output))
-        additional_traces = list(set(statistics) - (set(statistics) - {'gemiddelde', 'mediaan'}))
+        filter_output = pd.DataFrame(filter_output)
         if filter_output.empty:
             # PreventUpdate prevents ALL outputs updating
             raise dash.exceptions.PreventUpdate
         if len(filter_output['team_naam'].unique()) == 1:
             raise dash.exceptions.PreventUpdate
 
-        measurements = get_measurement_columns(filter_output)
-        result = calculate_mean_result_by_date(filter_output, measurements)
-        bundled_df = [df for _, df in result.groupby('lichting')]
-        df_mean_median = [(calculate_result_by_date(dashboard_data, measurements, statistic), statistic) for statistic
-                          in additional_traces]
-
-        fig = go.Figure(layout=go.Layout(autosize=True, height=625))
-
-        # Generate the traces for statistics
-        dash_dict = {'gemiddelde': 'solid', 'mediaan': 'dot'}
-        index = bundled_df[0].index
-        for idx, tupy in enumerate(df_mean_median):
-            df, statistic = tupy
-            df = df[df.index.isin(index)]
-            for jdx, measurement in enumerate(measurements):
-                column_name = rename_column(measurement)
-                fig.add_trace(go.Scatter(
-                    x=df.index,
-                    y=df[measurement],
-                    name=statistic,
-                    legendgroup=column_name,
-                    legendgrouptitle=dict(text=column_name),
-                    mode='lines+markers',
-                    line_shape="spline",
-                    line=dict(color='black', dash=dash_dict[statistic], width=3),
-                ))
-
-        # Generate traces for lichtingen
-        dash_list = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
-        for idx, df_lichting in enumerate(bundled_df):
-            name = str(df_lichting['lichting'].values[0])
-            for jdx, measurement in enumerate(measurements):
-                column_name = rename_column(measurement)
-                fig.add_trace(go.Scatter(
-                    x=df_lichting.index,
-                    y=df_lichting[measurement],
-                    name=name,
-                    legendgroup=column_name,
-                    legendgrouptitle=dict(text=column_name),
-                    mode='lines+markers',
-                    line_shape="spline",
-                    line=dict(color=get_colormap(idx), dash=dash_list[jdx], width=3),
-                ))
-
-        if len(measurements) > 0:
-            predicate = filter_output[measurements[0]].dtype == int
-            yaxis_title = 'Totaal score (punten)' if predicate else 'Beste of totaal resultaat'
-        else:
-            yaxis_title = 'Geen selectie'
-
-        fig.update_layout(
-            xaxis=fix_labels(filter_output),
-            yaxis_title=yaxis_title,
-            xaxis_title='Meet moment',
-            title_text="<b>Ontwikkeling lichtingen<b>"
-        )
-        return fig
+        return create_line(filter_output, dashboard_data, statistics)
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
@@ -443,17 +371,19 @@ def init_callbacks(dash_app):
             # PreventUpdate prevents ALL outputs updating
             raise dash.exceptions.PreventUpdate
 
-        figure = algemene_motoriek_chart.create_chart(
+        figure = create_chart(
             pd.DataFrame(dashboard_data))
         return dcc.Graph(figure=figure, responsive=True)
 
     # This callback is used to dynamically show the boxplot
     @dash_app.callback(
-        Output("show_boxplot", "children"),
+        Output("show_boxplot", "style"),
         [Input("statistics", "value")])
     def show_boxplot(statistics):
         if statistics is not None and "boxplot" in statistics:
-            return dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"})
+            return {"height": "45rem"}
+        else:
+            return {'display': 'none'}
 
 # This callback is used to dynamically create a boxplot
     @dash_app.callback(

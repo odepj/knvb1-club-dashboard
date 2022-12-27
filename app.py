@@ -1,14 +1,17 @@
 from flask import Flask, render_template
-from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
+
 import render_templates
+from authentication.authentication import authenticate_dashboard, handle_logout, handle_login, handle_request
+
 
 def init_app():
     app = Flask(__name__)
 
     with app.app_context():
-        from visualisation.dashboard_template import init_dashboard_template
+        from visualisation.dash.dash_app import init_dashboard_template
         app = init_dashboard_template(app)
         return app
+
 
 app = init_app()
 app.secret_key = 'databaseproject'
