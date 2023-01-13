@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
-
+import regex as re
+import math
 from visualisation.dash.dash_app_functions import *
 
 
@@ -25,6 +26,11 @@ def create_boxplot(individuen, dataframe: pd.DataFrame) -> go.box:
         ))
 
     for extra_column in extra_columns:
+        if re.search('.mediaan', extra_column):
+            marker_color = "black"
+        elif re.search('.gemiddelde', extra_column):
+            marker_color = "orange"
+
         column_name = rename_column(extra_column)
         fig.add_trace(go.Scatter(
             x=dataframe['team_naam'],
@@ -32,7 +38,9 @@ def create_boxplot(individuen, dataframe: pd.DataFrame) -> go.box:
             name=column_name,
             mode="markers",
             showlegend=True,
-            marker=dict(size=80, symbol="line-ew", line=dict(width=2, color="red")))),
+            marker=dict(size=60, symbol="line-ew", line=dict(width=2, color=marker_color)
+            )))
+    fig.update_layout(xaxis_title="Team naam")
 
     return fig
 
@@ -41,7 +49,6 @@ def create_box(individuen, dataframe: pd.DataFrame) -> go.Box:
     fig = create_boxplot(individuen, dataframe)
     fig.update_layout(title_text="<b>Vergelijking van teams<b>", autosize=True)
     fig.update_layout(yaxis_title="Beste van totaal resultaat")
-    fig.update_layout(xaxis_title="team naam")
     return fig
 
 
@@ -49,7 +56,6 @@ def create_boxplot_function(individuen, dataframe: pd.DataFrame) -> go.Box:
     fig = create_boxplot(individuen, dataframe)
     fig.update_layout(title_text="<b>Sprint vergelijking van teams<b>", autosize=True)
     fig.update_layout(yaxis_title="sprint score")
-    fig.update_layout(xaxis_title="team naam")
     return fig
 
 
@@ -147,18 +153,17 @@ def create_line(filter_output, dashboard_data, statistics):
     return line
 
 # This dictionary will be used to lookup BLOC-test specific rows
-columns = {"Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],
+columns = {"Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2",
+           "Zijwaarts_verplaatsen_totaal"],
            "Zijwaarts springen": ["Zijwaarts_springen_1", "Zijwaarts_springen_2", "Zijwaarts_springen_totaal"],
-           "Zijwaarts verplaatsen": ["Zijwaarts_verplaatsen_1", "Zijwaarts_verplaatsen_2",
-                                     "Zijwaarts_verplaatsen_totaal"],
-           "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2", "Oog_hand_coordinatie_totaal"]}
-
+           "Hand-oog coördinatie": ["Oog_hand_coordinatie_1", "Oog_hand_coordinatie_2", "Oog_hand_coordinatie_totaal"],
+           "Evenwichtsbalk": ["Balance_Beam_3cm", "Balance_Beam_4_5cm", "Balance_Beam_6cm", "Balance_beam_totaal"],}
+            
 # This dictionary will be used to rename the axises in the chart
-test_names = {"Balance_beam_totaal": "Evenwichtsbalk",
+test_names = {"Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen",
               "Zijwaarts_springen_totaal": "Zijwaarts springen",
-              "Zijwaarts_verplaatsen_totaal": "Zijwaarts verplaatsen",
-              "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie"}
-
+              "Oog_hand_coordinatie_totaal": "Hand-oog coördinatie",
+                "Balance_beam_totaal": "Evenwichtsbalk"}
 
 # This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -178,9 +183,13 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
     filtered_data = _calculate_sum(dataframe).round(decimals=2)
     total_columns = filtered_data.filter(regex='totaal').columns
 
-    # Create a bar chart using the filtered data and add additional styling and hover information
+    # Create a bar chart using the filtered data and add additional styling
     fig = px.bar(filtered_data, x='team_naam', y=total_columns,
-                 title="<b>Opbouw scores BLOC test<b>", )
+                 title="<b>Opbouw scores BLOC test<b>", color_discrete_map=
+                 {'Zijwaarts_verplaatsen_totaal': get_colormap(0),
+                 'Zijwaarts_springen_totaal': get_colormap(1),
+                 'Oog_hand_coordinatie_totaal': get_colormap(2),
+                 'Balance_beam_totaal': get_colormap(3),})
 
     fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
                       barmode='stack', legend_title="BLOC-testen")
