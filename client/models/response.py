@@ -80,27 +80,3 @@ class KnvbResponse:
 
     def __str__(self) -> str:
         return f'errorcode: {self.errorcode}, message: {self.message}, uitslagen: {self.List}'
-
-# {
-#       "errorcode":1000,"message":"Ok, Team Listing follows",
-#       "List":[
-#           {
-#               "teamid":"122561",
-#               "teamname":"Zilvermeeuwen 1",
-#               "speeldag":"ZO",
-#               "categorie":"Senioren",
-#               "regulierecompetitie":"J",
-#               "bekercompetitie":"J",
-#               "nacompetitie":"N"
-#           },{
-#               "teamid":"122564",
-#               "teamname":"Zilvermeeuwen 2",
-#               "speeldag":"ZO",
-#               "categorie":"Senioren",
-#               "regulierecompetitie":"J",
-#               "bekercompetitie":"J",
-#               "nacompetitie":"N"
-#           }
-#       ]
-#   }
-
