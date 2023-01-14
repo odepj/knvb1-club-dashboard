@@ -1,8 +1,60 @@
 from datetime import date, time
 
 
-def _instantiateFromList(List):
-    return list(map(lambda x: KnvbUitslagDTO(**x), List))
+def _do(obj, cls):
+    print(obj)
+    print(cls)
+    return cls(obj)
+
+
+def _instantiateFromList(cls, List):
+    if isinstance(List[0], type(dict)):
+        return list(map(lambda x: cls(**x), List))
+
+    return [_do(x, cls) for x in List]
+
+
+def flatten(S):
+    if S == []:
+        return S
+    if isinstance(S[0], list):
+        return flatten(S[0]) + flatten(S[1:])
+    return S[:1] + flatten(S[1:])
+
+
+class ResultDAO:
+    def __init__(self, MatchID, Datum, ThuisClub, UitClub, PuntenTeam1, PuntenTeam2, PuntenTeam1Verl,
+                 PuntenTeam2Verl, PuntenTeam1Strafsch, PuntenTeam2Strafsch, Bijzonderheden):
+        self.MatchID = MatchID
+        self.Datum = Datum
+        self.ThuisClub = ThuisClub
+        self.UitClub = UitClub
+        self.PuntenTeam1 = PuntenTeam1
+        self.PuntenTeam2 = PuntenTeam2
+        self.PuntenTeam1Verl = PuntenTeam1Verl
+        self.PuntenTeam2Verl = PuntenTeam2Verl
+        self.PuntenTeam1Strafsch = PuntenTeam1Strafsch
+        self.PuntenTeam2Strafsch = PuntenTeam2Strafsch
+        self.Bijzonderheden = Bijzonderheden
+
+        # return list(map(lambda x: cls(*x), df.values.tolist()))
+
+    def __str__(self) -> str:
+        return f'MatchID: {self.MatchID}\n Datum: {self.Datum}\n ThuisClub: {self.ThuisClub}\n UitClub: {self.UitClub}\n PuntenTeam1: {self.PuntenTeam1}\n PuntenTeam2: {self.PuntenTeam2}\n PuntenTeam1Verl: {self.PuntenTeam1Verl}\n PuntenTeam2Verl: {self.PuntenTeam2Verl}\n PuntenTeam1Strafsch: {self.PuntenTeam1Strafsch}\n PuntenTeam2Strafsch: {self.PuntenTeam2Strafsch}\n Bijzonderheden: {self.Bijzonderheden}\n'
+
+    @classmethod
+    def instanciateFromKnvbUitslagDTOs(cls, knvbUitslagDTOs):
+        return [cls(knvbUitslagDto.MatchID,
+                    knvbUitslagDto.Datum,
+                    knvbUitslagDto.ThuisClub,
+                    knvbUitslagDto.UitClub,
+                    knvbUitslagDto.PuntenTeam1,
+                    knvbUitslagDto.PuntenTeam2,
+                    knvbUitslagDto.PuntenTeam1Verl,
+                    knvbUitslagDto.PuntenTeam2Verl,
+                    knvbUitslagDto.PuntenTeam1Strafsch,
+                    knvbUitslagDto.PuntenTeam2Strafsch,
+                    knvbUitslagDto.Bijzonderheden) for knvbUitslagDto in knvbUitslagDTOs]
 
 
 class KnvbTeamInfoDTO:
@@ -69,14 +121,18 @@ class KnvbTeamInfoResponse:
     def __init__(self, errorcode: int, message: str, List: list):
         self.errorcode: int = errorcode
         self.message: str = message
-        self.knvbUitslagenDTOs: list = _instantiateFromList(List=List)
+        self.knvbUitslagenDTOs: list = _instantiateFromList(cls=KnvbUitslagDTO, List=List)
 
 
 class KnvbResponse:
-    def __init__(self, errorcode: int, message: str, List: list):
+    def __init__(self, errorcode: int, message: str, List: list = None):
+        print('init KnvbResponse')
         self.errorcode: int = errorcode
         self.message: str = message
-        self.List: list = _instantiateFromList(List=List)
+        self.List: list = _instantiateFromList(cls=dict, List=List)
+
+    # def __init__(self, error):
+    #     self.__init__(errorcode=error['errorcode'], message=error['message'])
 
     def __str__(self) -> str:
         return f'errorcode: {self.errorcode}, message: {self.message}, uitslagen: {self.List}'

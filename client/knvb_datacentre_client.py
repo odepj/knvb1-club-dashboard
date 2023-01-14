@@ -99,7 +99,4 @@ def _get_authorised_template_request():
 
 # Additional information about the API can be found at: https://api.knvbdataservice.nl/hoofdstuk/teams/1234/results
 
-def fetch_wedstrijd_resultaten(self):
-    req = _get_authorised_template_request()
-    res = _get_team_information(req, additional_information="")
-    return _mock_fetch()
+
