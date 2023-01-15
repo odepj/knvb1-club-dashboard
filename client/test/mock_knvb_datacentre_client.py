@@ -4,7 +4,7 @@ from hashlib import md5
 
 from dotenv import load_dotenv
 
-from client.models.response import *
+from client.models.models import *
 
 """
 RESPONSE FORMAT ZOALS AFGESPROKEN MET SANDRO

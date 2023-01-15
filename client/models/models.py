@@ -1,6 +1,6 @@
 from datetime import date, time
 
-from client.mapper import _instantiateFromList
+from client.util.mapper import instantiateClassFromList
 
 
 class ResultDAO:
@@ -22,7 +22,7 @@ class ResultDAO:
         return f'MatchID: {self.MatchID}\n Datum: {self.Datum}\n ThuisClub: {self.ThuisClub}\n UitClub: {self.UitClub}\n PuntenTeam1: {self.PuntenTeam1}\n PuntenTeam2: {self.PuntenTeam2}\n PuntenTeam1Verl: {self.PuntenTeam1Verl}\n PuntenTeam2Verl: {self.PuntenTeam2Verl}\n PuntenTeam1Strafsch: {self.PuntenTeam1Strafsch}\n PuntenTeam2Strafsch: {self.PuntenTeam2Strafsch}\n Bijzonderheden: {self.Bijzonderheden}\n'
 
     @classmethod
-    def instanciateFromKnvbUitslagDTOs(cls, knvbUitslagDTOs):
+    def instantiateFromKnvbUitslagDTOs(cls, knvbUitslagDTOs):
         return [cls(knvbUitslagDto.MatchID,
                     knvbUitslagDto.Datum,
                     knvbUitslagDto.ThuisClub,
@@ -101,7 +101,7 @@ class KnvbResponse:
         data = data['error'] if 'error' in data.keys() else data
         self.errorcode: int = data['errorcode']
         self.message: str = data['message']
-        self.List: list = _instantiateFromList(cls=dict, List=data['List']) if 'List' in data.keys() else None
+        self.List: list = instantiateClassFromList(cls=dict, List=data['List']) if 'List' in data.keys() else None
 
     def __str__(self) -> str:
         return f"KnvbResponse: {'{'}errorcode: {self.errorcode}, message: \"{self.message}\", list: {self.List}{'}'}"

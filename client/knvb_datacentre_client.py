@@ -3,27 +3,12 @@ import os
 
 from dotenv import load_dotenv
 
-from client.models.response import *
+from client.models.models import *
 
-from client.KnvbDatacenterRequestHandler import KnvbDatacenterRequestHandler
-
-# Additional information about the API can be found at: https://api.knvbdataservice.nl/hoofdstuk/teams/1234/results
+from client.handler.KnvbDatacentreRequestHandler import KnvbDatacentreRequestHandler
 
 """
-RESPONSE FORMAT ZOALS AFGESPROKEN MET SANDRO
-{
-        "MatchID":"9656058",
-        "Datum":"2015-10-11",
-        "ThuisClub":"VVA\/Spartaan 1",
-        "UitClub":"Zilvermeeuwen 1",
-        "PuntenTeam1":"0",
-        "PuntenTeam2":"1",
-        "PuntenTeam1Verl":"NULL",
-        "PuntenTeam2Verl":"NULL",
-        "PuntenTeam1Strafsch":"NULL",
-        "PuntenTeam2Strafsch":"NULL",
-        "Bijzonderheden":"AFG",
-    }
+    Additional information about the API can be found at: https://api.knvbdataservice.nl/hoofdstuk/teams/1234/results
 """
 
 load_dotenv()
@@ -33,8 +18,7 @@ _AUTH_PATH = os.getenv('AUTH_URL')
 _API_KEY = os.getenv('API_KEY')
 _STATUS_CODES = json.loads(os.getenv('STATUS_CODES'))
 
-
-requestHandler = KnvbDatacenterRequestHandler(_BASE_URL, _AUTH_PATH, _API_KEY, _STATUS_CODES)
+requestHandler = KnvbDatacentreRequestHandler(_BASE_URL, _AUTH_PATH, _API_KEY, _STATUS_CODES)
 
 
 def get_all_teams() -> list[KnvbTeamInfoDTO]:

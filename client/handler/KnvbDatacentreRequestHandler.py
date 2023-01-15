@@ -3,19 +3,17 @@ from hashlib import md5
 
 import requests
 
-from client.mapper import _instantiateFromList
-from client.models.response import KnvbResponse
+from client.util.mapper import instantiateClassFromList
+from client.models.models import KnvbResponse
 
 
 def _pretty_print_request(req):
     method = f'method: {req.method}'
     url = f'url: {req.url}'
-    print(
-        '{}\n\t{}\n\t{}\n'.format('REQUEST:', method, url)
-    )
+    print('{}\n\t{}\n\t{}\n'.format('REQUEST:', method, url))
 
 
-class KnvbDatacenterRequestHandler:
+class KnvbDatacentreRequestHandler:
     def __init__(self, base_url, auth_path, api_key, status_codes):
         self.base_url = base_url
         self.auth_path = auth_path
@@ -23,11 +21,11 @@ class KnvbDatacenterRequestHandler:
         self.status_codes = status_codes
 
     def handle(self, url_path, params=None, data_classtype=dict):
-        to_be_authorized = url_path.split('/')[1]
+        to_be_authorized = '/' + url_path.split('/')[1]
         auth_params = self._get_authorization_request_params(to_be_authorized)
         params = params.update(auth_params) if params is not None else auth_params
         result = self._send_request(url_path, params)
-        return _instantiateFromList(data_classtype, result.List)
+        return instantiateClassFromList(data_classtype, result.List)
 
     def _send_request(self, url_path, params):
         try:
@@ -44,7 +42,7 @@ class KnvbDatacenterRequestHandler:
         except requests.exceptions.Timeout as errt:
             logging.error("Timeout Error:", errt)
         except requests.exceptions.RequestException as err:
-            logging.error("OOps: Something Else", err)
+            logging.error("Something went wrong:", err)
 
     def _get_authorization_request_params(self, auth_path):
         session_id = self._get_session_id()
@@ -70,9 +68,10 @@ class KnvbDatacenterRequestHandler:
         return md5(f'{self.api_key}#{url_path}#{session_id}'.encode('utf-8')).hexdigest()
 
     def _check_request_code(self, request: KnvbResponse):
-        key = str(request.errorcode)
         msg = f'Request to client resulted in an error, statuscode: {request.errorcode},' \
               f' http response message: {request.message}'
+
+        key = str(request.errorcode)
         if request.errorcode != 1000 and key in self.status_codes.keys():
             error = self.status_codes[key]
             logging.error(msg + f'\nerror message according to API doc: {error}')

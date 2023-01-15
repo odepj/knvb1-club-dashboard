@@ -1,13 +1,13 @@
-import client.mock_knvb_datacenter_client as mock_client
+import client.test.mock_knvb_datacentre_client as mock_client
 import client.knvb_datacentre_client as knvb_client
-from client.mapper import flatten
-from client.models.response import *
+from client.util.mapper import flatten
+from client.models.models import *
 
 
 def mock_get_all_wedstrijd_resultaten():
     teams = mock_client.get_teams()
     team_uitslagen_dtos = flatten([mock_client.get_uitslagen(team.teamid, 'A') for team in teams])
-    resultDAOs = ResultDAO.instanciateFromKnvbUitslagDTOs(team_uitslagen_dtos)
+    resultDAOs = ResultDAO.instantiateFromKnvbUitslagDTOs(team_uitslagen_dtos)
     print(resultDAOs[0])
 
 
