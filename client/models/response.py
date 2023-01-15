@@ -1,25 +1,6 @@
 from datetime import date, time
 
-
-def _do(obj, cls):
-    print(obj)
-    print(cls)
-    return cls(obj)
-
-
-def _instantiateFromList(cls, List):
-    if isinstance(List[0], type(dict)):
-        return list(map(lambda x: cls(**x), List))
-
-    return [_do(x, cls) for x in List]
-
-
-def flatten(S):
-    if S == []:
-        return S
-    if isinstance(S[0], list):
-        return flatten(S[0]) + flatten(S[1:])
-    return S[:1] + flatten(S[1:])
+from client.mapper import _instantiateFromList
 
 
 class ResultDAO:
@@ -36,8 +17,6 @@ class ResultDAO:
         self.PuntenTeam1Strafsch = PuntenTeam1Strafsch
         self.PuntenTeam2Strafsch = PuntenTeam2Strafsch
         self.Bijzonderheden = Bijzonderheden
-
-        # return list(map(lambda x: cls(*x), df.values.tolist()))
 
     def __str__(self) -> str:
         return f'MatchID: {self.MatchID}\n Datum: {self.Datum}\n ThuisClub: {self.ThuisClub}\n UitClub: {self.UitClub}\n PuntenTeam1: {self.PuntenTeam1}\n PuntenTeam2: {self.PuntenTeam2}\n PuntenTeam1Verl: {self.PuntenTeam1Verl}\n PuntenTeam2Verl: {self.PuntenTeam2Verl}\n PuntenTeam1Strafsch: {self.PuntenTeam1Strafsch}\n PuntenTeam2Strafsch: {self.PuntenTeam2Strafsch}\n Bijzonderheden: {self.Bijzonderheden}\n'
@@ -117,22 +96,12 @@ class KnvbUitslagDTO:
         return f'MatchID: {self.MatchID}, Datum: {self.Datum}, ThuisClub: {self.ThuisClub}, UitClub: {self.UitClub}'
 
 
-class KnvbTeamInfoResponse:
-    def __init__(self, errorcode: int, message: str, List: list):
-        self.errorcode: int = errorcode
-        self.message: str = message
-        self.knvbUitslagenDTOs: list = _instantiateFromList(cls=KnvbUitslagDTO, List=List)
-
-
 class KnvbResponse:
-    def __init__(self, errorcode: int, message: str, List: list = None):
-        print('init KnvbResponse')
-        self.errorcode: int = errorcode
-        self.message: str = message
-        self.List: list = _instantiateFromList(cls=dict, List=List)
-
-    # def __init__(self, error):
-    #     self.__init__(errorcode=error['errorcode'], message=error['message'])
+    def __init__(self, data):
+        data = data['error'] if 'error' in data.keys() else data
+        self.errorcode: int = data['errorcode']
+        self.message: str = data['message']
+        self.List: list = _instantiateFromList(cls=dict, List=data['List']) if 'List' in data.keys() else None
 
     def __str__(self) -> str:
-        return f'errorcode: {self.errorcode}, message: {self.message}, uitslagen: {self.List}'
+        return f"KnvbResponse: {'{'}errorcode: {self.errorcode}, message: \"{self.message}\", list: {self.List}{'}'}"

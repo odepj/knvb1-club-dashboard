@@ -1,8 +1,7 @@
+import logging
 import os
 from hashlib import md5
-from urllib.request import Request
 
-import requests
 from dotenv import load_dotenv
 
 from client.models.response import *
@@ -32,24 +31,9 @@ _API_KEY = os.getenv('API_KEY')
 
 
 # Input parameters
-
-#    PHPSESSID: Session ID verkregen uit initialisatie
-#    hash: Hash berekend aan client side
 #    teamid: Uniek Team ID. Let op, team moet team van club zijn.
 #    weeknummer: week waarvan de uitslagen worden opgehaald (1-52, A) (optioneel) (A = begin seizoen tot huidige week)
 #    comptype: Competitie type R = Regulier, B = Beker, N = Nacompetitie, V = Vriendschappelijke Competitie, default = R
-
-# #Initialisatie
-#   #PathName -> Unieke pathname voor de club zoals vastgelegd in het admin interface.
-#   #PHPSESSID (request-param) -> https://api.voetbaldatacentre.nl/api/initialisatie/<PathName>
-
-#    #Session ID als salt gebruikt voor de MD5 hash, welke verder gebruik maakt van de statische key die door voetbaldatacentre wordt verstrekt.
-#    #_'KEY' is hierbij:
-#     #De 'secret key' die aan app ontwikkelaars is verstrekt, of
-#     #De API sleutel die de sitebeheerder via het admin interface kan verkrijgen indien het API product besteld is.
-#   #Voorbeeld: md5('mobapi_static_key#clubs/BB44ABC/results#eff1a8d6311bb132338681570456fbcd')
-#   #hash (request-param) -> md5(key#/teams#session_id) == md5('<key>#<url_path>#<session_id>');
-# Example req_url: /teams/<teamid>/results?[weeknummer=12][&comptype=R|B|N|V&]PHPSESSID=<12345>&hash=<abbccdde200394>
 def get_uitslagen(team_id, weeknummer, comptype=None) -> list[KnvbUitslagDTO]:
     authorized_url = _BASE_URL + _mock_get_auth_query_parameters(auth_path='/teams')
     params = {'teamid': team_id, 'weeknummer': weeknummer}
@@ -68,26 +52,24 @@ def get_teams() -> list[KnvbTeamInfoDTO]:
 
 
 def _mock_successful_response(given, result):
-    print('input:', given)
-    return KnvbResponse(errorcode=result['errorcode'], message=result['message'], List=result['List'])
+    return KnvbResponse(result)
 
 
 def _mock_expired_session_response(given, result):
-    print('input:', given)
-    return KnvbResponse(error=result)
+    return KnvbResponse(result)
 
 
 def _mock_get_auth_query_parameters(auth_path):
-    php_sess_id = _get_session_id()
-    hash = _generate_hash(auth_path, php_sess_id)
+    php_sess_id = _get_session_id(False)
+    hash_code = _generate_hash(auth_path, php_sess_id)
 
     # example result: /teams?PHPSESSID=<12345>&hash=<abbccdde200394>
-    return f'{auth_path}?PHPSESSID={php_sess_id}&hash={hash}'
+    return f'{auth_path}?PHPSESSID={php_sess_id}&hash={hash_code}'
 
 
 # #Input parameters
 #    pathname: Unieke pathname voor de club zoals vastgelegd in het admin interface.
-#    apiversion: Deze parameter is optioneel; in sommige gevallen kan er een bepaald versie nummer van de API mee afgedwongen worden.
+#    apiversion: Is optioneel; in sommige gevallen kan er een bepaald versie nummer van de API mee afgedwongen worden.
 def _get_session_id(successful=True):
     # BASEURL/api/initialisatie/<pathname>[&apiversion=1.0]
     auth_url = _AUTH_PATH
@@ -97,13 +79,14 @@ def _get_session_id(successful=True):
     else:
         auth_resp = _mock_expired_session_response(auth_url,
                                                    {"error": {"errorcode": "9992", "message": "Hash not correct"}})
-        raise Exception(f'error auth invalid, code:{auth_resp.errorcode}, message: {auth_resp.message}')
+        msg = f'Error auth invalid, code: {auth_resp.errorcode}, message: {auth_resp.message}'
+        logging.error(msg)
 
 
 def _generate_hash(url_path, session_id):
     api_key = _API_KEY
     string = f'{api_key}#{url_path}#{session_id}'.encode('utf-8')
-    return md5(string)
+    return md5(string).hexdigest()
 
 
 def _mock_initialisatie_response():

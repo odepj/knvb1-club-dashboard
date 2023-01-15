@@ -1,102 +1,63 @@
 import json
 import os
-from hashlib import md5
 
-import requests
+from dotenv import load_dotenv
 
-from client.models.request import KnvbAuthorisedRequest
-from client.models.response import KnvbResponse
+from client.models.response import *
 
-
-#
-# #Output parameters
-
-#    error: Error code als er een fout was
-#    OF
-#    PHPSESSID: Session ID
-#    clubnaam: Volledige naam van club
-#    apiversion: Versie van de API
-#    changed: Datum en tijd waarop de laatste wijziging heeft plaatsgevonden
-#    changelog: URL van changelog waar aanwezige versie van de API kunnen worden gecontroleerd
-#    logo: URL van clublogo
-#    kleuren: Een array van kleuren die ingesteld zijn voor de app
-#    rss: nvt
-#    twitter: nvt
-#    twittertags: nvt
-#    appsponsor: nvt
-
-# #Req teams
-# #Input parameters
-
-#    PHPSESSID: Session ID verkregen uit initialisatie
-#    hash: Hash berekend aan client side
-base_url = os.getenv('VOETBAL_DATACENTRE_CLIENT_BASEURL')
-headers = {'HTTP_X_APIKEY': os.getenv('VOETBAL_DATACENTRE_API_KEY')}
-
-
-def _get_team_information(request_template: KnvbAuthorisedRequest, additional_information):
-    requests.get(base_url + "/teams")
-
-    return 'stuff'
-
-    # #Output parameters
-
-    #   {
-    #       "errorcode":1000,"message":"Ok, Team Listing follows",
-    #       "List":[
-    #           {
-    #               "teamid":"122561",
-    #               "teamname":"Zilvermeeuwen 1",
-    #               "speeldag":"ZO",
-    #               "categorie":"Senioren",
-    #               "regulierecompetitie":"J",
-    #               "bekercompetitie":"J",
-    #               "nacompetitie":"N"
-    #           },{
-    #               "teamid":"122564",
-    #               "teamname":"Zilvermeeuwen 2",
-    #               "speeldag":"ZO",
-    #               "categorie":"Senioren",
-    #               "regulierecompetitie":"J",
-    #               "bekercompetitie":"J",
-    #               "nacompetitie":"N"
-    #           }
-    #       ]
-    #   }
-    #
-
-    # #Req uitslagen
-    #
-    # https://api.voetbaldatacentre.nl/api/teams/<teamid>/results?[weeknummer=12][&comptype=R|B|N|V&]PHPSESSID=<12345>&hash=<abbccdde200394>
-    # #Input parameters
-    #
-    #     PHPSESSID: Session ID verkregen uit initialisatie
-    #     hash: Hash berekend aan client side
-    #     teamid: Uniek Team ID. Let op, team moet team van club zijn.
-    #     weeknummer: week waarvan de uitslagen worden opgehaald (1-52, A) (optioneel)
-    #     comptype: Competitie type R = Regulier, B = Beker, N = Nacompetitie, V = Vriendschappelijke Competitie
-
-    # #Output -> KnvbUitslagenDTO
-
-
-KNVB_API = 'https://api.voetbaldatacentre.nl/'
-
-print(requests.get('https://api.voetbaldatacentre.nl/api/initialisatie/clubs/BB44ABC/results',
-                   headers={'HTTP_X_APIKEY': '12'}).json())
-
-
-def _get_authorised_template_request():
-    # #https://api.voetbaldatacentre.nl/api/initialisatie/EXAMPLE_PATH
-    session_url = os.getenv('VOETBAL_DATACENTRE_CLIENT_BASEURL') + os.getenv('VOETBAL_DATACENTRE_API_URL_PATH')
-    headers = {'HTTP_X_APIKEY': os.getenv('VOETBAL_DATACENTRE_API_KEY')}
-    result = requests.get(session_url, headers=headers)
-
-    # Print result for now
-    print('session request result:', result)
-
-    return KnvbAuthorisedRequest(information="")
-
+from client.KnvbDatacenterRequestHandler import KnvbDatacenterRequestHandler
 
 # Additional information about the API can be found at: https://api.knvbdataservice.nl/hoofdstuk/teams/1234/results
 
+"""
+RESPONSE FORMAT ZOALS AFGESPROKEN MET SANDRO
+{
+        "MatchID":"9656058",
+        "Datum":"2015-10-11",
+        "ThuisClub":"VVA\/Spartaan 1",
+        "UitClub":"Zilvermeeuwen 1",
+        "PuntenTeam1":"0",
+        "PuntenTeam2":"1",
+        "PuntenTeam1Verl":"NULL",
+        "PuntenTeam2Verl":"NULL",
+        "PuntenTeam1Strafsch":"NULL",
+        "PuntenTeam2Strafsch":"NULL",
+        "Bijzonderheden":"AFG",
+    }
+"""
 
+load_dotenv()
+
+_BASE_URL = os.getenv('BASE_URL')
+_AUTH_PATH = os.getenv('AUTH_URL')
+_API_KEY = os.getenv('API_KEY')
+_STATUS_CODES = json.loads(os.getenv('STATUS_CODES'))
+
+
+requestHandler = KnvbDatacenterRequestHandler(_BASE_URL, _AUTH_PATH, _API_KEY, _STATUS_CODES)
+
+
+def get_all_teams() -> list[KnvbTeamInfoDTO]:
+    result = requestHandler.handle(url_path='/teams', data_classtype=KnvbTeamInfoDTO)
+    if not result:
+        return []
+    return result
+
+
+# Example: /teams/<teamid>/results?[weeknummer=12][&comptype=R|B|N|V&]PHPSESSID=<12345>&hash=<abbccdde200394>
+def get_uitslagen_by_team_id(team_id, weeknummer='A', comptype=None) -> list[KnvbUitslagDTO]:
+    """Input parameters\n
+    ##teamid: Uniek Team ID. Let op, team moet team van club zijn.\n
+    #weeknummer: week waarvan de uitslagen worden opgehaald (1-52, A) (optioneel) (A = begin seizoen tot huidige week)\n
+    #comptype: Competitie type R = Regulier, B = Beker, N = Nacompetitie, V = Vriendschappelijke Competitie, default = R"""
+
+    url = f'/teams/{team_id}/results'
+    params = {'weeknummer': weeknummer}
+
+    if comptype is not None:
+        params = params.update({'comptype': comptype})
+
+    result = requestHandler.handle(url_path=url, params=params, data_classtype=KnvbUitslagDTO)
+    if not result:
+        return []
+    return result
