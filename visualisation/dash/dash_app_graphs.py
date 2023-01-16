@@ -1,7 +1,6 @@
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import regex as re
-import math
 from visualisation.dash.dash_app_functions import *
 
 
@@ -32,13 +31,15 @@ def create_boxplot(individuen, dataframe: pd.DataFrame) -> go.box:
             marker_color = "orange"
 
         column_name = rename_column(extra_column)
+        marker_df = dataframe.groupby('team_naam')[[extra_column]].mean().reset_index()
+
         fig.add_trace(go.Scatter(
-            x=dataframe['team_naam'],
-            y=dataframe[extra_column],
+            x=marker_df['team_naam'],
+            y=marker_df.iloc[:,1],
             name=column_name,
             mode="markers",
             showlegend=True,
-            marker=dict(size=60, symbol="line-ew", line=dict(width=2, color=marker_color)
+            marker=dict(size=70, symbol="line-ew", line=dict(width=3, color=marker_color)
             )))
     fig.update_layout(xaxis_title="Team naam")
 
@@ -60,8 +61,9 @@ def create_boxplot_function(individuen, dataframe: pd.DataFrame) -> go.Box:
 
 
 def create_line(filter_output, dashboard_data, statistics):
+    filter_output = pd.DataFrame(filter_output)
     dashboard_data = pd.DataFrame(dashboard_data)
-    filter_output = drop_mean_and_median_columns(pd.DataFrame(filter_output))
+    filter_output = drop_mean_and_median_columns(filter_output)
     additional_traces = list(set(statistics) - (set(statistics) - {'gemiddelde', 'mediaan'}))
     measurements = get_measurement_columns(filter_output)
     result = calculate_mean_result_by_date(filter_output, measurements)
