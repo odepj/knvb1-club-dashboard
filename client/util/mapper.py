@@ -1,6 +1,4 @@
 def instantiateClassFromList(cls, List):
-    if not List:
-        return
     return list(map(lambda x: cls(**x), List))
 
 

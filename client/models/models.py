@@ -46,30 +46,16 @@ class KnvbTeamInfoDTO:
         self.bekercompetitie = bekercompetitie
         self.nacompetitie = nacompetitie
 
+    def __str__(self) -> str:
+        return f'teamid: {self.teamid},\n teamname: {self.teamname},\n speeldag: {self.speeldag},\n categorie: {self.categorie},\n regulierecompetitie: {self.regulierecompetitie},\n bekercompetitie: {self.bekercompetitie},\n nacompetitie: {self.nacompetitie}\n'
+
 
 class KnvbUitslagDTO:
-    def __init__(self,
-                 MatchID: int,
-                 WedstrijdNummer: int,
-                 Datum: date,
-                 Tijd: time,
-                 ThuisClub: str,
-                 ThuisLogo: str,
-                 ThuisTeamID: int,
-                 UitClub: str,
-                 UitLogo: str,
-                 UitTeamID: int,
-                 PuntenTeam1: int,
-                 PuntenTeam2: int,
-                 PuntenTeam1Verl: int = None,
-                 PuntenTeam2Verl: int = None,
-                 PuntenTeam1Strafsch: int = None,
-                 PuntenTeam2Strafsch: int = None,
-                 Bijzonderheden: str = "",
-                 Scheidsrechter: str = "",
-                 CompType: str = "",
-                 CompNummer: str = "",
-                 WedstrijdDag: int = None):
+    def __init__(self, MatchID: int, WedstrijdNummer: int, Datum: date, Tijd: time, ThuisClub: str, ThuisLogo: str,
+                 ThuisTeamID: int, UitClub: str, UitLogo: str, UitTeamID: int, PuntenTeam1: int, PuntenTeam2: int,
+                 PuntenTeam1Verl: int = None, PuntenTeam2Verl: int = None, PuntenTeam1Strafsch: int = None,
+                 PuntenTeam2Strafsch: int = None, Bijzonderheden: str = "", Scheidsrechter: str = "",
+                 CompType: str = "", CompNummer: str = "", WedstrijdDag: int = None):
         self.MatchID = MatchID
         self.WedstrijdNummer = WedstrijdNummer
         self.Datum = Datum

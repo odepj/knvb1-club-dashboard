@@ -4,8 +4,7 @@ import os
 from dotenv import load_dotenv
 
 from client.models.models import *
-
-from client.handler.KnvbDatacentreRequestHandler import KnvbDatacentreRequestHandler
+from client.knvb_datacentre_request_handler import KnvbDatacentreRequestHandler
 
 """
     Additional information about the API can be found at: https://api.knvbdataservice.nl/hoofdstuk/teams/1234/results
@@ -22,13 +21,9 @@ requestHandler = KnvbDatacentreRequestHandler(_BASE_URL, _AUTH_PATH, _API_KEY, _
 
 
 def get_all_teams() -> list[KnvbTeamInfoDTO]:
-    result = requestHandler.handle(url_path='/teams', data_classtype=KnvbTeamInfoDTO)
-    if not result:
-        return []
-    return result
+    return requestHandler.handle(url_path='/teams', data_classtype=KnvbTeamInfoDTO)
 
 
-# Example: /teams/<teamid>/results?[weeknummer=12][&comptype=R|B|N|V&]PHPSESSID=<12345>&hash=<abbccdde200394>
 def get_uitslagen_by_team_id(team_id, weeknummer='A', comptype=None) -> list[KnvbUitslagDTO]:
     """Input parameters\n
     ##teamid: Uniek Team ID. Let op, team moet team van club zijn.\n
@@ -39,9 +34,6 @@ def get_uitslagen_by_team_id(team_id, weeknummer='A', comptype=None) -> list[Knv
     params = {'weeknummer': weeknummer}
 
     if comptype is not None:
-        params = params.update({'comptype': comptype})
+        params.update({'comptype': comptype})
 
-    result = requestHandler.handle(url_path=url, params=params, data_classtype=KnvbUitslagDTO)
-    if not result:
-        return []
-    return result
+    return requestHandler.handle(url_path=url, params=params, data_classtype=KnvbUitslagDTO)
