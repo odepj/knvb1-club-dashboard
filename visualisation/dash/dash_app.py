@@ -15,12 +15,29 @@ from visualisation.dash.dash_app_graphs import *
 BVO_LIST = request_bvo()
 
 
-def save_filter_to_session(key: str, value: str) -> None:
+def save_filter_to_session(key: str, value) -> None:
     session[key] = value
 
 
-def retrieve_filter_from_session(key: str):
+def get_filter_from_session(key: str):
     return session.get(key)
+
+
+def get_or_update_filter_from_session(key: str, values):
+    stored_session_value = session.get(key)
+    if stored_session_value is None:
+        stored_session_value = values
+        save_filter_to_session(key, values)
+    return stored_session_value
+
+
+# PreventUpdate prevents ALL outputs updating
+def prevent_update():
+    raise dash.exceptions.PreventUpdate
+
+
+def convert_and_validate(data):
+    return pd.DataFrame(data) if data is not None else prevent_update()
 
 
 # This method is used by the app.py to initialize the Dash dashboard in Flask
@@ -32,8 +49,8 @@ def init_dashboard_template(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-    dash_app.layout = basic_dashboard_layout()
     # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
+    dash_app.layout = basic_dashboard_layout()
 
     # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
     init_callbacks(dash_app)
@@ -74,6 +91,7 @@ def basic_dashboard_layout():
                                                           # Lichting selection dropdown
                                                           dcc.Dropdown(
                                                               id="lichting_selector",
+
                                                               placeholder="Lichting",
                                                               className="mb-2"
                                                           ),
@@ -156,7 +174,6 @@ def init_callbacks(dash_app):
         [Input('selected_dashboard', 'data')])
     def get_dashboard_data(selected_dashboard) -> list[dict]:
         bvo_id = session.get('id')
-        # bvo_id = '1X8m4'
         data = pd.DataFrame()
 
         if selected_dashboard == "verspringen":
@@ -172,6 +189,15 @@ def init_callbacks(dash_app):
 
         return data.to_dict(orient='records')
 
+    @dash_app.callback(Output("teams_selector", "value"),
+                       Output("lichting_selector", "value"),
+                       Output("seizoen_selector", "value"),
+                       Input('selected_dashboard', 'children'))
+    def init_filter_values(_):
+        return [get_filter_from_session('teams'),
+                get_filter_from_session('lichting'),
+                get_filter_from_session('seizoen')]
+
     # This callback is used to dynamically return the filters selection menu
     @dash_app.callback(dict(teams_selector=Output("teams_selector", "options"),
                             lichting_selector=Output("lichting_selector", "options"),
@@ -179,54 +205,32 @@ def init_callbacks(dash_app):
                        [Input('dashboard_data', 'data'),
                         Input("teams_selector", "value"),
                         Input("lichting_selector", "value"),
-                        Input("seizoen_selector", "value"),
-                        ])
-    def filter_selection(dashboard_data, team_selector, lichting_selector, seizoen_selector):
-        df = pd.DataFrame(dashboard_data)
+                        Input("seizoen_selector", "value")])
+    def filter_options(data_dict, team_selector, lichting_selector, seizoen_selector):
+        df = convert_and_validate(data_dict)
         original_values = get_unique_values(df, ['team_naam', 'lichting', 'seizoen'])
         to_filter_by = [('team_naam', team_selector), ('lichting', lichting_selector), ('seizoen', seizoen_selector)]
-
         return dict(
-            teams_selector=get_filter_options_or_default(df, 'team_naam', [to_filter_by[1], to_filter_by[2]], original_values),
-            lichting_selector=get_filter_options_or_default(df, 'lichting', [to_filter_by[0], to_filter_by[2]], original_values),
-            seizoen_selector=get_filter_options_or_default(df, 'seizoen', [to_filter_by[0], to_filter_by[1]], original_values)
+            teams_selector=sorted(get_filter_options_or_default(df, 'team_naam', [to_filter_by[1], to_filter_by[2]], original_values)),
+            lichting_selector=sorted(get_filter_options_or_default(df, 'lichting', [to_filter_by[0], to_filter_by[2]], original_values)),
+            seizoen_selector=get_filter_options_or_default(df, 'seizoen', [to_filter_by[0], to_filter_by[1]], original_values),
         )
 
     # This callback is used to dynamically return the statistics selection menu
     @dash_app.callback(
         Output('statistics_selector', 'value'),
-        [Input('dashboard_data', 'data')])
-    def statistics_selection(dashboard_data) -> dbc.Card:
+        Input('selected_dashboard', 'data'))
+    def statistics_selection(_):
         # add the default statistics selection
-        values = ["mediaan", "boxplot", "individuen"]
+        return get_or_update_filter_from_session("statistics", ["mediaan", "boxplot", "individuen"])
 
-        session_statistics = retrieve_filter_from_session("statistics")
-        if session_statistics is None:
-            session_statistics = values
-            save_filter_to_session("statistics", values)
-
-        return session_statistics
-
-
-    @dash_app.callback(
-        dict(options=Output('measurement_selector', 'options'),
-             value=Output('measurement_selector', 'value')),
-        [Input('dashboard_data', 'data'),
-         Input('selected_dashboard', 'data')])
-    def measurement_selection(dashboard_data, selected_dashboard):
-        dashboard_data = pd.DataFrame(dashboard_data)
-        if dashboard_data.empty:
-            # PreventUpdate prevents ALL outputs updating
-            raise dash.exceptions.PreventUpdate
-
-        measurements = get_measurement_columns(dashboard_data)
+    @dash_app.callback(dict(options=Output('measurement_selector', 'options'),
+                            value=Output('measurement_selector', 'value')),
+                       Input('dashboard_data', 'data'))
+    def measurement_selection(data_dict):
+        dataframe = convert_and_validate(data_dict)
+        measurements = get_measurement_columns(dataframe)
         options = [{"label": f"{rename_column(entry)}", "value": f"{entry}"} for entry in measurements]
-
-        session_statistics = retrieve_filter_from_session("measurement_selection")
-        if session_statistics is None:
-            session_statistics = measurements
-        save_filter_to_session("measurement_selection", session_statistics)
-
         return dict(options=options, value=measurements)
 
     @dash_app.callback(Output("filter_output", "data"),
@@ -236,61 +240,59 @@ def init_callbacks(dash_app):
                         Input("seizoen_selector", "value"),
                         Input("measurement_selector", "value"),
                         Input("statistics_selector", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, measurement_selection, statistics: list) -> list[dict]:
-        dashboard_data = pd.DataFrame(dashboard_data)
+    def filter_data(data_dict, teams, lichting, seizoen, measurement_selection, statistics: list) -> list[dict]:
+        dataframe = convert_and_validate(data_dict)
 
         if teams is not None:
-            dashboard_data = dashboard_data[dashboard_data["team_naam"] == teams]
+            dataframe = dataframe[dataframe["team_naam"] == teams]
 
         if lichting is not None:
-            dashboard_data = dashboard_data[dashboard_data["lichting"] == lichting]
+            dataframe = dataframe[dataframe["lichting"] == lichting]
 
         if seizoen is not None:
-            dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
+            dataframe = dataframe[dataframe["seizoen"] == seizoen]
 
         if measurement_selection is not None:
-            dashboard_data = filter_measurements(dashboard_data, measurement_selection)
+            dataframe = filter_measurements(dataframe, measurement_selection)
 
         if any(item in ['gemiddelde', 'mediaan'] for item in statistics):
-            dashboard_data = aggregate_measurement_by_team_result(dashboard_data, statistics)
+            dataframe = aggregate_measurement_by_team_result(dataframe, statistics)
 
-        save_filter_to_session("teams", teams)
-        save_filter_to_session("lichting", lichting)
-        save_filter_to_session("seizoen", seizoen)
+        save_filter_to_session('teams', teams)
+        save_filter_to_session('lichting', lichting)
+        save_filter_to_session('seizoen', seizoen)
         save_filter_to_session("measurement_selection", measurement_selection)
         save_filter_to_session("statistics", statistics)
 
-        return dashboard_data.to_dict(orient='records')
+        return dataframe.to_dict(orient='records')
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("dashboard_data", "data"),
-                        Input("filter_output", "data"),
-                        Input("statistics_selector", "value")])
-    def create_line_chart(dashboard_data, filter_output, statistics):
-        filter_output = pd.DataFrame(filter_output)
-        if filter_output.empty:
-            # PreventUpdate prevents ALL outputs updating
-            raise dash.exceptions.PreventUpdate
-        if len(filter_output['team_naam'].unique()) == 1:
-            raise dash.exceptions.PreventUpdate
-
-        return create_line(filter_output, dashboard_data, statistics)
+                       Input("filter_output", "data"))
+    def create_line_chart(filtered_data_dict):
+        dataframe = pd.DataFrame(filtered_data_dict)
+        # statistics = get_filter_from_session('statistics')
+        # measurement = get_filter_from_session('measurement_selection')
+        # The existing chart remains untouched when only a single team is selected. This prevents strange output.
+        is_set = get_filter_from_session('teams') is None
+        if is_set:
+            return build_line_chart(dataframe)
+        else:
+            return dash.no_update
+            # back_up = convert_and_validate(
+            #     filter_data(data_dict, None, filter['lichting_selector_val'], filter['seizoen_selector_val'],
+            #                 measurement, statistics))
+            # return build_line_chart(back_up)
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
         [Input("selected_dashboard", "data"), Input("filter_output", "data")])
-    def create_bloc_test_chart(selected_dashboard, dashboard_data):
+    def create_bloc_test_chart(selected_dashboard, data_dict):
         if selected_dashboard != "algemene_motoriek":
             return None
 
-        if dashboard_data is None:
-            # PreventUpdate prevents ALL outputs updating
-            raise dash.exceptions.PreventUpdate
-
-        figure = create_chart(
-            pd.DataFrame(dashboard_data))
+        figure = create_chart(pd.DataFrame(data_dict))
         return dcc.Graph(figure=figure, responsive=True)
 
     # This callback is used to dynamically show the boxplot
@@ -309,19 +311,7 @@ def init_callbacks(dash_app):
         [Input("selected_dashboard", "data")],
         [Input("statistics_selector", "value")],
         [Input("filter_output", "data")])
-    def create_boxplot(selected_dashboard, statistics, dashboard_data):
-        # place code for creating the boxplot here
-        # var dashboard data contains a dict of the current dashboard data DataFrame
-        # return created plot here as callback output
-        if dashboard_data is None:
-            # PreventUpdate prevents ALL outputs updating
-            raise dash.exceptions.PreventUpdate
-
-        if selected_dashboard != "sprint":
-            return create_box(
-                "all" if "individuen" in statistics else False,
-                pd.DataFrame(dashboard_data))
-
-        return create_boxplot_function(
-            "all" if "individuen" in statistics else False,
-            pd.DataFrame(dashboard_data))
+    def create_boxplot(selected_dashboard, statistics, data_dict):
+        dataframe = pd.DataFrame(data_dict)
+        individuen_selected = "all" if "individuen" in statistics else False
+        return create_box(individuen_selected, dataframe, selected_dashboard)
