@@ -68,36 +68,6 @@ def get_colormap(index_selector) -> str:
     return f"{px.colors.qualitative.Set1[index_selector]}"
 
 
-def add_figure_rangeslider(fig):
-    # Add range slider
-    return fig.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=12,
-                         label="laatste 2 metingen",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=2.25,
-                         label="laatste 5 metingen",
-                         step="year",
-                         stepmode="backward"),
-                    dict(count=5,
-                         label="laatste 10 metingen",
-                         step="year",
-                         stepmode="todate"),
-                    dict(label="alle metingen",
-                         step="all")
-                ])
-            ),
-            rangeslider=dict(
-                visible=True
-            ),
-            type="date"
-        )
-    )
-
-
 def fix_labels(df: pd.DataFrame) -> dict:
     df_ticktext = df[['seizoen', 'reeks_naam']].drop_duplicates()
     ticktext = [f"""{row.seizoen.removeprefix('20')}, {row.reeks_naam}""" for row in df_ticktext.itertuples()]
@@ -166,3 +136,23 @@ def drop_mean_and_median_columns(df: pd.DataFrame) -> pd.DataFrame:
     measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
     columns_to_drop = [col for col in measurement_columns if any(x in col for x in ['.mediaan', '.gemiddelde'])]
     return df.drop(columns_to_drop, axis=1)
+
+
+def get_unique_values(df: pd.DataFrame, columns) -> dict:
+    unique = dict()
+    for column in columns:
+        unique.update({f'{column}': sorted([column_values for column_values in df[column].unique()])})
+    return unique
+
+
+def get_filter_options_or_default(df: pd.DataFrame, get_options_for: str, according_to: list[tuple[str, list]], otherwise_default_to: dict):
+    key1, value1 = according_to[0]
+    key2, value2 = according_to[1]
+    if value1 and value2:
+        return df[df[key1].isin([value1]) & df[key2].isin([value2])][get_options_for].unique()
+    elif value1:
+        return df[df[key1].isin([value1])][get_options_for].unique()
+    elif value2:
+        return df[df[key2].isin([value2])][get_options_for].unique()
+    else:
+        return otherwise_default_to[get_options_for]

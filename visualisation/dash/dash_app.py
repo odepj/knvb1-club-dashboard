@@ -1,3 +1,5 @@
+from typing import List, Tuple, Any, Dict, Union
+
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
@@ -30,8 +32,21 @@ def init_dashboard_template(server):
         external_stylesheets=[dbc.themes.BOOTSTRAP]
     )
 
-    dash_app.layout = dbc.Container(
-        fluid=True, children=[
+    dash_app.layout = basic_dashboard_layout()
+    # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
+
+    # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
+    init_callbacks(dash_app)
+    # dash_app.run(debug=True, dev_tools_hot_reload=True, )
+    return dash_app.server
+
+
+def basic_dashboard_layout():
+    return dbc.Container(
+        id='container',
+        style={'padding': '1rem'},
+        fluid=True,
+        children=[
             # get the current selected url and store the selected dashboard in a dcc.Store object
             dcc.Location(id="url", refresh=True),
             dcc.Store(id='selected_dashboard'),
@@ -40,157 +55,147 @@ def init_dashboard_template(server):
 
             dbc.Row([
                 # Filter menu's
-                dbc.Col(
-                    width=2,
-                    children=[
-                        html.Div(id="filter_selection"),
-                        html.Div(id="bloc_test_selection"),
-                        html.Div(id="measurement_selection"),
-                        html.Div(id="statistics_selection"),
-                        html.Div(id="benchmark_selection"),
-                        html.Div(id='bvo_alert'),
-                    ],
-                    style={"height": "10rem"}),
-                # Graphs
-                dbc.Col(
-                    width=10,
-                    children=[
-                        html.Div(id="show_boxplot", children=[
-                            dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"}),
-                        ]),
+                dbc.Col(width=2,
+                        children=[
+                            dbc.Card(id="filter_selection_card",
+                                     style={'margin-bottom': '1rem'},
+                                     children=[
+                                         dbc.CardHeader("Filters", class_name="text-center fw-bold",
+                                                        style={"background-color": "#FF9900"}),
+                                         dbc.CardBody(id="filter_selectors",
+                                                      children=[
+                                                          # Team selection dropdown
+                                                          dcc.Dropdown(
+                                                              id="teams_selector",
+                                                              placeholder="Teams",
+                                                              className="mb-2"
+                                                          ),
 
-                        dbc.Row(id='graph-container', class_name='d-flex justify-content-center',
-                                children=[dcc.Graph(id="line_chart")]),
-                        dbc.Col(html.Div(id="algemene_motoriek_graph")),
-                    ]
-                ),
+                                                          # Lichting selection dropdown
+                                                          dcc.Dropdown(
+                                                              id="lichting_selector",
+                                                              placeholder="Lichting",
+                                                              className="mb-2"
+                                                          ),
+
+                                                          # Seizoen selection dropdown
+                                                          dcc.Dropdown(
+                                                              id="seizoen_selector",
+                                                              placeholder="Seizoen",
+                                                              className="mb-2"
+                                                          ),
+                                                      ])
+                                     ]),
+                            dbc.Card(id="measurement_selection_card",
+                                     style={'margin-bottom': '1rem'},
+                                     children=[
+                                         dbc.CardHeader("Metingen",
+                                                        class_name="text-center fw-bold",
+                                                        style={"background-color": "#FF9900"}),
+                                         dbc.CardBody(
+                                             dbc.Checklist(
+                                                 id="measurement_selector",
+                                                 label_checked_style={"color": "green"},
+                                                 input_style={"backgroundColor": "red"},
+                                                 input_checked_style={
+                                                     "backgroundColor": "green",
+                                                     "borderColor": "#green",
+                                                 },
+                                             )
+                                         )
+                                     ]),
+                            dbc.Card(id="statistics_selection_card",
+                                     style={'margin-bottom': '1rem'},
+                                     children=[
+                                         dbc.CardHeader("Statistiek",
+                                                        class_name="text-center fw-bold",
+                                                        style={"background-color": "#FF9900"}),
+                                         dbc.CardBody(
+                                             [dbc.Checklist(
+                                                 id="statistics_selector",
+                                                 options=[
+                                                     {"label": "Gemiddelde", "value": "gemiddelde"},
+                                                     {"label": "Mediaan", "value": "mediaan"},
+                                                     {"label": "Boxplot", "value": "boxplot"},
+                                                     {"label": "Individuen", "value": "individuen"},
+                                                 ],
+                                                 value=[],
+                                                 label_checked_style={"color": "green"},
+                                                 input_style={"backgroundColor": "red"},
+                                                 input_checked_style={
+                                                     "backgroundColor": "green",
+                                                     "borderColor": "#green",
+                                                 },
+                                             ),
+                                             ],
+                                         ),
+                                     ]),
+                        ]),
+                # Graphs
+                dbc.Col(width=10,
+                        children=[
+                            dcc.Graph(id="boxplot", style={"height": "45rem"}),
+                            dcc.Graph(id="line_chart"),
+                            dbc.Col(id="algemene_motoriek_graph"),
+                        ])
             ])
         ])
-    # All the layout items such as the dashboard's charts itself are put in this 'layout' variable below
-
-    # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
-    init_callbacks(dash_app)
-
-    return dash_app.server
 
 
 # This method is used to create and initialize callbacks that will be used by the charts or selection items
 def init_callbacks(dash_app):
     # This callback is used to dynamically return the current selected dashboard from the url
     @dash_app.callback(
-        Output('selected_dashboard', 'children'),
+        Output('selected_dashboard', 'data'),
         [Input('url', 'pathname')])
     def get_selected_dashboard(pathname) -> str:
         return re.sub(r'^.+/([^/]+)$', r'\1', pathname)
 
     @dash_app.callback(
-        Output('dashboard_data', 'children'),
-        [Input('selected_dashboard', 'children')])
-    def get_dashboard_data(selected_dashboard) -> dict:
+        Output('dashboard_data', 'data'),
+        [Input('selected_dashboard', 'data')])
+    def get_dashboard_data(selected_dashboard) -> list[dict]:
         bvo_id = session.get('id')
-        data_dict = dict()
+        # bvo_id = '1X8m4'
+        data = pd.DataFrame()
 
         if selected_dashboard == "verspringen":
-            data_dict = request_vertesprong(bvo_id).to_dict(orient='records')
+            data = request_vertesprong(bvo_id)
         elif selected_dashboard == "sprint":
-            data_dict = request_sprint(bvo_id).to_dict(orient='records')
+            data = request_sprint(bvo_id)
         elif selected_dashboard == "cod":
-            data_dict = request_change_of_direction(bvo_id).to_dict(orient='records')
+            data = request_change_of_direction(bvo_id)
         elif selected_dashboard == "algemene_motoriek":
-            data_dict = request_algemene_motoriek(bvo_id).to_dict(orient='records')
+            data = request_algemene_motoriek(bvo_id)
+        data["geboortedatum"] = pd.to_datetime(data["geboortedatum"])
+        data['lichting'] = data["geboortedatum"].dt.year
 
-        return data_dict
-
-    # This callback is used to dynamically return the bloc test selection menu
-    @dash_app.callback(
-        Output('bloc_test_selection', 'children'),
-        [Input('selected_dashboard', 'children')])
-    def bloc_test_selection(selected_dashboard):
-        if selected_dashboard != "algemene_motoriek":
-            return None
-
-        # add the default bloc-test selection
-        values = ["Evenwichtsbalk", "Zijwaarts springen",
-                  "Zijwaarts verplaatsen", "Hand-oog coördinatie"]
-
-        session_bloc = retrieve_filter_from_session("bloc_test_selection")
-        if session_bloc is None:
-            session_bloc = values
-            save_filter_to_session("bloc_test_selection", values)
-
-        return dbc.Card([
-            dbc.CardHeader("BLOC-testen", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [dbc.Checklist(
-                    id="bloc_test_selection",
-                    options=[
-                        {"label": "Evenwichtsbalk",
-                         "value": "Evenwichtsbalk"},
-                        {"label": "Zijwaarts springen",
-                         "value": "Zijwaarts springen"},
-                        {"label": "Zijwaarts verplaatsen",
-                         "value": "Zijwaarts verplaatsen"},
-                        {"label": "Hand-oog coördinatie",
-                         "value": "Hand-oog coördinatie"},
-                    ],
-                    value=session_bloc,
-                    label_checked_style={"color": "green"},
-                    input_style={"backgroundColor": "red"},
-                    input_checked_style={
-                        "backgroundColor": "green",
-                        "borderColor": "#green",
-                    },
-                ),
-                ],
-            ),
-        ], class_name="mb-4")
+        return data.to_dict(orient='records')
 
     # This callback is used to dynamically return the filters selection menu
-    @dash_app.callback(
-        Output('filter_selection', 'children'),
-        [Input('dashboard_data', 'children'),
-         Input('filter_output', 'children')])
-    def filter_selection(dashboard_data, filter_output) -> dbc.Card:
-        dashboard_data = pd.DataFrame(dashboard_data) if filter_output is None else pd.DataFrame(filter_output)
-        dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
+    @dash_app.callback(dict(teams_selector=Output("teams_selector", "options"),
+                            lichting_selector=Output("lichting_selector", "options"),
+                            seizoen_selector=Output("seizoen_selector", "options")),
+                       [Input('dashboard_data', 'data'),
+                        Input("teams_selector", "value"),
+                        Input("lichting_selector", "value"),
+                        Input("seizoen_selector", "value"),
+                        ])
+    def filter_selection(dashboard_data, team_selector, lichting_selector, seizoen_selector):
+        df = pd.DataFrame(dashboard_data)
+        original_values = get_unique_values(df, ['team_naam', 'lichting', 'seizoen'])
+        to_filter_by = [('team_naam', team_selector), ('lichting', lichting_selector), ('seizoen', seizoen_selector)]
 
-        return dbc.Card([
-            dbc.CardHeader("Filters", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [
-                    # Team selection dropdown
-                    dcc.Dropdown(
-                        sorted([team_name for team_name in dashboard_data["team_naam"].unique()]),
-                        id="teams",
-                        value=retrieve_filter_from_session("teams"),
-                        placeholder="Teams",
-                        className="mb-2"),
-
-                    # Lichting selection dropdown
-                    dcc.Dropdown(
-                        sorted([lichting for lichting in dashboard_data["geboortedatum"].dt.year.unique()]),
-                        id="lichting",
-                        value=retrieve_filter_from_session("lichting"),
-                        placeholder="Lichting",
-                        className="mb-2"),
-
-                    # Seizoen selection dropdown
-                    dcc.Dropdown(
-                        [season for season in dashboard_data["seizoen"].unique()],
-                        id="seizoen",
-                        value=retrieve_filter_from_session("seizoen"),
-                        placeholder="Seizoen",
-                    ),
-                ]
-            ),
-        ], class_name="mb-4")
+        return dict(
+            teams_selector=get_filter_options_or_default(df, 'team_naam', [to_filter_by[1], to_filter_by[2]], original_values),
+            lichting_selector=get_filter_options_or_default(df, 'lichting', [to_filter_by[0], to_filter_by[2]], original_values),
+            seizoen_selector=get_filter_options_or_default(df, 'seizoen', [to_filter_by[0], to_filter_by[1]], original_values)
+        )
 
     # This callback is used to dynamically return the statistics selection menu
     @dash_app.callback(
-        Output('statistics_selection', 'children'),
-        [Input('dashboard_data', 'children')])
+        Output('statistics_selector', 'value'),
+        [Input('dashboard_data', 'data')])
     def statistics_selection(dashboard_data) -> dbc.Card:
         # add the default statistics selection
         values = ["mediaan", "boxplot", "individuen"]
@@ -200,59 +205,15 @@ def init_callbacks(dash_app):
             session_statistics = values
             save_filter_to_session("statistics", values)
 
-        return dbc.Card([
-            dbc.CardHeader("Statistiek", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [dbc.Checklist(
-                    id="statistics",
-                    options=[
-                        {"label": "Gemiddelde", "value": "gemiddelde"},
-                        {"label": "Mediaan", "value": "mediaan"},
-                        {"label": "Boxplot", "value": "boxplot"},
-                        {"label": "Individuen", "value": "individuen"},
-                    ],
-                    value=session_statistics,
-                    label_checked_style={"color": "green"},
-                    input_style={"backgroundColor": "red"},
-                    input_checked_style={
-                        "backgroundColor": "green",
-                        "borderColor": "#green",
-                    },
-                ),
-                ],
-            ),
-        ], class_name="mb-4")
+        return session_statistics
 
-    # This callback is used to dynamically return the benchmark selection menu
-    @dash_app.callback(
-        Output('benchmark_selection', 'children'),
-        [Input('dashboard_data', 'children')])
-    def benchmark_selection(dashboard_data) -> dbc.Card:
-        return dbc.Card([
-            dbc.CardHeader("Benchmark", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [  # Benchmark selection dropdown
-                    dcc.Dropdown(
-                        placeholder="BVO's",
-                        options=BVO_LIST["display_name"],
-                        id="bvo",
-                        value=retrieve_filter_from_session("bvo"),
-                    ), ],
-            ),
-        ])
-
-        # This callback is used to dynamically return the bloc test selection menu
 
     @dash_app.callback(
-        Output('measurement_selection', 'children'),
-        [Input('dashboard_data', 'children'),
-         Input('selected_dashboard', 'children')])
+        dict(options=Output('measurement_selector', 'options'),
+             value=Output('measurement_selector', 'value')),
+        [Input('dashboard_data', 'data'),
+         Input('selected_dashboard', 'data')])
     def measurement_selection(dashboard_data, selected_dashboard):
-        if selected_dashboard == "algemene_motoriek":
-            return None
-
         dashboard_data = pd.DataFrame(dashboard_data)
         if dashboard_data.empty:
             # PreventUpdate prevents ALL outputs updating
@@ -266,67 +227,26 @@ def init_callbacks(dash_app):
             session_statistics = measurements
         save_filter_to_session("measurement_selection", session_statistics)
 
-        return dbc.Card([
-            dbc.CardHeader("Metingen", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [dbc.Checklist(
-                    id="measurement_selection",
-                    options=options,
-                    value=measurements,
-                    label_checked_style={"color": "green"},
-                    input_style={"backgroundColor": "red"},
-                    input_checked_style={
-                        "backgroundColor": "green",
-                        "borderColor": "#green",
-                    },
-                ),
-                ],
-            ),
-        ], class_name="mb-4")
+        return dict(options=options, value=measurements)
 
-    @dash_app.callback(Output('bvo_alert', 'children'),
-                       Input('bvo', 'value'))
-    def show_alert(bvo):
-        if bvo is None:
-            return {}
-
-        return dbc.Alert("Functionaliteit niet beschikbaar!",
-                         color="danger",
-                         id="alert-fade",
-                         dismissable=True,
-                         style={'margin-top': '10px'}
-                         )
-
-    @dash_app.callback(Output("filter_output", "children"),
-                       [Input("dashboard_data", "children"),
-                        Input("teams", "value"),
-                        Input("lichting", "value"),
-                        Input("seizoen", "value"),
-                        Input("bvo", "value"),
-                        Input("bloc_test_selection", "value"),
-                        Input("measurement_selection", "value"),
-                        Input("statistics", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, measurement_selection,
-                    statistics: list) -> list[dict]:
+    @dash_app.callback(Output("filter_output", "data"),
+                       [Input("dashboard_data", "data"),
+                        Input("teams_selector", "value"),
+                        Input("lichting_selector", "value"),
+                        Input("seizoen_selector", "value"),
+                        Input("measurement_selector", "value"),
+                        Input("statistics_selector", "value")])
+    def filter_data(dashboard_data, teams, lichting, seizoen, measurement_selection, statistics: list) -> list[dict]:
         dashboard_data = pd.DataFrame(dashboard_data)
-        dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 
         if teams is not None:
             dashboard_data = dashboard_data[dashboard_data["team_naam"] == teams]
 
         if lichting is not None:
-            dashboard_data = dashboard_data[dashboard_data["geboortedatum"].dt.year == lichting]
+            dashboard_data = dashboard_data[dashboard_data["lichting"] == lichting]
 
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
-
-        if bvo == session.get('id'):
-            team_naam = BVO_LIST[BVO_LIST["display_name"] == bvo]['bvo_naam'].values[0]
-            dashboard_data = dashboard_data[dashboard_data["bvo_naam"] == team_naam]
-
-        if bloc_test_selection is not None:
-            dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
 
         if measurement_selection is not None:
             dashboard_data = filter_measurements(dashboard_data, measurement_selection)
@@ -337,18 +257,16 @@ def init_callbacks(dash_app):
         save_filter_to_session("teams", teams)
         save_filter_to_session("lichting", lichting)
         save_filter_to_session("seizoen", seizoen)
-        save_filter_to_session("bvo", bvo)
-        save_filter_to_session("bloc_test_selection", bloc_test_selection),
-        save_filter_to_session("measurement_selection", measurement_selection),
-        save_filter_to_session("statistics", statistics),
+        save_filter_to_session("measurement_selection", measurement_selection)
+        save_filter_to_session("statistics", statistics)
 
         return dashboard_data.to_dict(orient='records')
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("dashboard_data", "children"),
-                        Input("filter_output", "children"),
-                        Input("statistics", "value")])
+                       [Input("dashboard_data", "data"),
+                        Input("filter_output", "data"),
+                        Input("statistics_selector", "value")])
     def create_line_chart(dashboard_data, filter_output, statistics):
         filter_output = pd.DataFrame(filter_output)
         if filter_output.empty:
@@ -362,7 +280,7 @@ def init_callbacks(dash_app):
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
         Output("algemene_motoriek_graph", "children"),
-        [Input("selected_dashboard", "children"), Input("filter_output", "children")])
+        [Input("selected_dashboard", "data"), Input("filter_output", "data")])
     def create_bloc_test_chart(selected_dashboard, dashboard_data):
         if selected_dashboard != "algemene_motoriek":
             return None
@@ -377,20 +295,20 @@ def init_callbacks(dash_app):
 
     # This callback is used to dynamically show the boxplot
     @dash_app.callback(
-        Output("show_boxplot", "style"),
-        [Input("statistics", "value")])
+        Output("boxplot", "style"),
+        [Input("statistics_selector", "value")])
     def show_boxplot(statistics):
         if statistics is not None and "boxplot" in statistics:
             return {"height": "45rem"}
         else:
             return {'display': 'none'}
 
-# This callback is used to dynamically create a boxplot
+    # This callback is used to dynamically create a boxplot
     @dash_app.callback(
         Output("boxplot", "figure"),
-        [Input("selected_dashboard", "children")],
-        [Input("statistics", "value")],
-        [Input("filter_output", "children")])
+        [Input("selected_dashboard", "data")],
+        [Input("statistics_selector", "value")],
+        [Input("filter_output", "data")])
     def create_boxplot(selected_dashboard, statistics, dashboard_data):
         # place code for creating the boxplot here
         # var dashboard data contains a dict of the current dashboard data DataFrame
