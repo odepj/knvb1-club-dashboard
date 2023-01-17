@@ -1,0 +1,62 @@
+{% extends 'base.html' %}
+
+{% block head %}
+
+{% endblock %}
+
+{% block body %}
+<div class="formwrapper">
+<!--    <div class="accfoto">-->
+<!--        <div class="fotowrapper">-->
+<!--            <div class="loginfoto"></div>-->
+<!--        </div>-->
+<!--    </div>-->
+    <div class="formtext">
+        <div class="accform" id="logincontainer">
+            <div class="row">
+                <form class="col s12" action="{{ url_for('request') }}" method="post">
+                    <div class="row">
+                        <div class="titeltekst row">
+                            <div class="col s12">
+                                <span>Account aanmaken</span>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="input-field col s12">
+                                <input name="username" id="email" type="text" class="validate" required="">
+                                <label for="email">Gebruikersnaam</label>
+                                <div id="errorText"></div>
+                            </div>
+                        </div>
+                        <div class="row email">
+                            <div class="input-field col s12">
+                                <input name="email" id="e-mail" type="email" class="validate" required="">
+                                <label for="e-mail">Email</label>
+                            </div>
+                        </div>
+                        <div class="row ww">
+                            <div class="input-field col s12">
+                                <input name="password" id="password" type="password" class="validate" required="">
+                                <label for="password">Wachtwoord</label>
+                            </div>
+                        </div>
+                        <div class="row club">
+                            <div class="input-field col s12">
+                                <input name="club" id="club" type="text" class="validate" required="">
+                                <label for="club">Club</label>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col s12">
+                                <div class="error">{{ errorMessage }}</div>
+                                <input type="submit" id="requestBtn" class="accknop waves-effect btn">
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

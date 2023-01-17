@@ -1,0 +1,34 @@
+variables:
+  IMAGE_NAME: "knvb-images"
+
+stages:
+  - "build_image"
+
+build_image:
+  stage: build_image
+  image: docker:20.10.17
+  services:
+    - docker:20.10.17-dind
+  tags:
+    - hva
+  only:
+    refs:
+      - staging
+      - main
+
+  script:
+    # login into the GitLab Container Registry
+    - docker login -u $CI_REGISTRY_USER -p $CI_REGISTRY_PASSWORD $CI_REGISTRY
+
+    # build image with the commit SHA
+    - docker build . -t $CI_REGISTRY/$CI_PROJECT_PATH/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+
+    # get the image ID from the previous image
+    - IMAGE_ID=$(docker images | grep $CI_REGISTRY/$CI_PROJECT_PATH\/$IMAGE_NAME | awk '{print $3}')
+
+    # retag the image with the digest of the previous image
+    - docker tag $IMAGE_ID $CI_REGISTRY/$CI_PROJECT_PATH/$IMAGE_NAME:latest
+
+    # push the image with both the latest tag and the SHA tag
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH/$IMAGE_NAME:$CI_COMMIT_SHORT_SHA
+    - docker push $CI_REGISTRY/$CI_PROJECT_PATH/$IMAGE_NAME:latest

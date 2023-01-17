@@ -1,0 +1,472 @@
+body {
+    margin: 0;
+    padding: 0;
+    font-family: 'Roboto', sans-serif;
+    background: #FAFAFA;
+}
+
+
+/* HOMEPAGINA */
+
+.home {
+    background: #FF9900;
+    height: 100vh;
+}
+
+.home .flexcontainer {
+    height: inherit;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column;
+}
+
+.home .knvblogo {
+    border-radius: 100px;
+    height: 200px;
+    width: 200px;
+    background: black;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.home .knvblogo img {
+    height: 150px;
+    width: auto;
+    position: absolute;
+    top: 10%;
+    left: 19%;
+}
+
+.titletext {
+    font-weight: 400;
+}
+
+.descriptiontext {
+    font-size: 14pt;
+    width: 40%;
+    max-width: 500px;
+    text-align: justify;
+}
+
+.loginbutton {
+    padding: 20px 0 0 0;
+}
+
+.loginbutton a {
+    display: block;
+    background: #FF9900;
+    color: white;
+    border: 0;
+    height: 50px;
+    width: 200px;
+    border-radius: 50px;
+    cursor: pointer;
+    text-align: center;
+    line-height: 44px;
+    border: 3px solid white;
+    text-decoration: none;
+}
+
+.loginbutton a span {
+    font-weight: bold;
+    text-decoration: none;
+    font-size: 14pt;
+}
+
+.loginbutton a:hover {
+    transition: .2s;
+    background: white;
+    border: 3px solid white;
+    ;
+    color: black;
+}
+
+
+/* LOGINPAGINA */
+
+.login {
+    height: 100vh;
+}
+
+.error{
+    text-align: center;
+    color: red;
+}
+
+.ww {
+    margin-bottom: 0;
+}
+
+.formwrapper {
+    width: 100%;
+}
+
+.formtext {
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-flow: column;
+}
+
+.accwrapper {
+    display: flex;
+    width: 100%;
+}
+
+.accfoto {
+    width: 50%;
+}
+
+.acctekst {
+    width: 50%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    flex-flow: column;
+}
+
+.fotowrapper div {
+    width: 100%;
+    height: 100vh;
+    object-fit: cover;
+    background: url(../images/knvb_rinus.jpg);
+    background-size: cover;
+}
+
+.acclogo {
+    width: 100%;
+    height: 100px;
+    justify-self: flex-start;
+    text-align: center;
+}
+
+.acclogo img {
+    height: inherit;
+    margin: 20px auto;
+}
+
+.accform {
+    justify-content: center;
+    width: 351px;
+    align-self: center;
+}
+
+.accreglink {
+    text-align: center;
+    width: 100%;
+    height: 40px;
+}
+
+.accreglink a {
+    color: #FF9900;
+}
+
+.accreglink a:hover {
+    color: #E68000;
+    transition: .2s;
+}
+
+.accknop {
+    width: 100%;
+    border-radius: 5px;
+    height: 50px;
+    font-weight: bold;
+    text-transform: none;
+    line-height: 50px;
+}
+
+#loginBtn a,
+.accknop input,
+#resetpass,
+#backtologin,
+#resetpassword {
+    font-family: "Open Sans", sans-serif;
+    width: 100%;
+    height: 100%;
+    color: white !important;
+    cursor: pointer;
+    text-align: center;
+    text-decoration: none;
+}
+
+.wwvergeten {
+    text-align: right;
+    padding-left: 0 !important;
+}
+
+.wwvergetentekst {
+    font-size: 14px;
+    color: #FF9900;
+    font-weight: bold;
+}
+
+.wwvergetentekst:hover {
+    color: #E68000;
+    transition: .2s;
+}
+
+.titeltekst,
+.subtekst {
+    margin: 0;
+}
+
+.titeltekst div span {
+    line-height: 30px;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+
+/* DASHBOARDPAGINA */
+
+.dashboardcontainer {
+    display: flex;
+}
+
+.dashboard {
+    height: 100vh;
+    margin: 0 0 0 240px;
+}
+
+.dashboard .flexcontainer {
+    height: inherit;
+    display: flex;
+    align-items: center;
+    flex-flow: column;
+    position: relative;
+}
+
+.statistiekcontainer {
+    width: 100%;
+    display: flex;
+    flex-flow: column;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.statistiekcontainer .row {
+    justify-content: center;
+    margin: 0 5%;
+}
+
+.statistiek {
+    width: 380px;
+    height: 200px;
+    background: red;
+    border-radius: 10px;
+    margin: 20px;
+    background-size: cover !important;
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-flow: column;
+    font-size: 18pt;
+    cursor: pointer;
+    transition: .3s;
+}
+
+.statistiek:hover {
+    transition: .3s;
+    font-size: 22pt;
+}
+
+.statistiek span {
+    color: white;
+    font-weight: bold;
+}
+
+.verspringen {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/verspringen.jpg);
+}
+
+.sprint {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/sprint.jpg);
+}
+
+.zijwaartsspringen {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/zijwaartsspringen.jpg);
+}
+
+.handoogcoord {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/handoogcoord.jpg);
+}
+
+.evenwichtsbalk {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/evenwichtsbalk.jpg);
+}
+
+.zijwaartsverplaatsen {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/zijwaartsverplaatsen.jpg);
+}
+
+.cod {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/cod.jpg);
+}
+
+.gecombineerd {
+    background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url(../images/gecombineerd.jpg);
+}
+
+:root {
+    --animate-delay: 0.8s;
+}
+
+.backarrow {
+    transition: .2s;
+    position:absolute;
+    left: 30px;
+    top: 43px;
+}
+
+.backarrow:hover {
+    left: 20px;
+}
+
+.backarrow img {
+    height: 60px;
+}
+
+.chartcontainer {
+    border: 5px solid #F90;
+    border-radius: 5px;
+}
+
+
+/* SIDEBAR */
+
+.menu {
+    background: #FF9900;
+    height: 100vh;
+    width: 240px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 5;
+    outline: none;
+    display: flex;
+    justify-content: space-between;
+    flex-direction: column;
+}
+
+.accountoverview {
+    background: black;
+    padding: 12px 10px;
+}
+
+.accountoverview span {
+    font-weight: bold;
+    background: black;
+    display: block;
+    margin: 20px 0 4px 0;
+    height: 40px;
+    line-height: 36px;
+    color: white;
+    font-size: 18pt;
+    border-bottom: 3px solid orange;
+}
+
+.menu .avatar {
+    text-align: center;
+}
+
+.menu .avatar img {
+    width: 100px;
+    border: 3px solid orange;
+    overflow: hidden;
+    box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.2);
+    background: orange;
+    border-radius: 100%;
+    margin: 16px 0 0 0;
+}
+
+.menu .avatar h2 {
+    font-weight: normal;
+    margin-bottom: 0;
+}
+
+.menu ul {
+    list-style: none;
+    padding: 0.5em 0;
+    margin: 0;
+}
+
+.menu ul li {
+    font-weight: bold;
+    font-size: 14pt;
+    color: white;
+    cursor: pointer;
+    width: 100%;
+}
+
+.klassecontainer li {
+    padding: 10px;
+}
+
+.submitage {
+    visibility: hidden;
+}
+
+.menu ul {
+    list-style: none;
+}
+.menu li {
+    height: 30px;
+    display: inline-block;
+    margin: 5px 15px 5px 0;
+}
+.menu input {
+    visibility:hidden;
+}
+.menu label {
+    cursor: pointer;
+    line-height: 30px;
+    width: 50%;
+    border-radius: 15px;
+    color: white;
+    font-size: 13pt;
+    border: 2px solid #FF9900;
+}
+.menu input:hover + label {
+    border: 2px solid white;
+    background: white;
+    color: black;
+    border-radius: 15px;
+    transition: .3s;
+}
+
+select {
+    display: block !important;
+}
+
+#voetbalklasse {
+    background-color: #FF9900;
+    border: 2px solid white;
+    color: white;
+    cursor: pointer;
+    margin: 0 auto;
+}
+
+.loguit {
+    text-align: center;
+    font-size: 14pt;
+    font-weight: bold;
+    background: black;
+    color: white;
+    cursor: pointer;
+    transition: .2s;
+}
+
+.loguit:hover {
+    color: #FF9900;
+}
+
+.loguit span {
+    height: inherit;
+    width: inherit;
+}
