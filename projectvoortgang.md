@@ -14,19 +14,23 @@ Aan het einde van sprint 1 hadden we het volgende gedaan:
 -	CSV bestand ontvangen met gegenereerde data -> verwerkt met Pandas -> Database opgezet met SqlAlchemy ORM.
 -	Docker & CI/CD pipeline.
 -	Analyses gedaan voor machine learning, webscraping.
+
 Aan het einde van sprint 2 hadden we het volgende gedaan:
 -	Refactoring van de applicatie.
 -	Registratie authenticatie.
 -	Eerste schetsen van datavisualisatie.
+
 Aan het einde van sprint 3 hadden we het volgende gedaan:
 -	Meeting gehad bij KNVB met onze voortgang
 -	Zeven verschillende visualisaties laten zien aan de KNVB om uit te kiezen.
 -	Feedback KNVB verwerkt
+
 Aan het einde van sprint 4 hadden we het volgende gedaan:
 -	Splitsing KNVB teams waarbij ons team het volgende moest af hebben: Dashboard template in Dash, Per club, code gegenereerd beter onderhoudbaar en leesbaar, meer verschillende grafieken onder de verschillende tegels.
 -	Dash dashboard template gemaakt.
 -	Nieuwe dataset geïmplenteerd.
 -	Nieuw eindresultaat: Demo app van 1 club in Docker, App voor de KNVB in Docker, Database connectie string die veranderd kan worden.
+
 Aan het einde van sprint 5 hadden we het volgende gedaan:
 -	Dashboard geoptimaliseerd.
 -	Bug fixes.
