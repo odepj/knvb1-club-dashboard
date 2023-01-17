@@ -12,7 +12,7 @@ def get_team_selection():
 def vertesprong():
     bvo_id = get_bvo_id()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
     header = "Vertesprong"
@@ -23,7 +23,7 @@ def vertesprong():
 def sprint():
     bvo_id = get_bvo_id()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
     header = "Sprint per afstand"
@@ -34,7 +34,7 @@ def sprint():
 def change_of_direction():
     bvo_id = get_bvo_id()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
     header = "CoD Scores per been"
@@ -45,7 +45,7 @@ def change_of_direction():
 def algemene_motoriek():
     bvo_id = get_bvo_id()
 
-    if (bvo_id == None):
+    if bvo_id is None:
         return redirect('/login')
 
     header = "Algemene Motoriek"

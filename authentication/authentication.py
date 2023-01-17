@@ -1,8 +1,10 @@
-from flask import render_template, redirect, session, url_for, request, session
-from passlib.hash import sha256_crypt
-import database.database as db
 import random
 import string
+
+from flask import render_template, redirect, url_for, request, session
+from passlib.hash import sha256_crypt
+
+import database.database as db
 
 
 def authenticate_dashboard():
