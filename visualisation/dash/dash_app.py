@@ -47,20 +47,18 @@ def init_dashboard_template(server):
                         html.Div(id="bloc_test_selection"),
                         html.Div(id="measurement_selection"),
                         html.Div(id="statistics_selection"),
-                        html.Div(id="benchmark_selection"),
-                        html.Div(id='bvo_alert'),
                     ],
                     style={"height": "10rem"}),
                 # Graphs
                 dbc.Col(
                     width=10,
                     children=[
-                        html.Div(id="show_boxplot", children=[
+                        html.Div(children=[
                             dcc.Graph(id="boxplot", responsive=True, style={"height": "45rem"}),
                         ]),
 
                         dbc.Row(id='graph-container', class_name='d-flex justify-content-center',
-                                children=[dcc.Graph(id="line_chart")]),
+                                children=[dcc.Graph(id="line_chart", responsive=True, style={"height": "45rem"})]),
                         dbc.Col(html.Div(id="algemene_motoriek_graph")),
                     ]
                 ),
@@ -224,27 +222,8 @@ def init_callbacks(dash_app):
             ),
         ], class_name="mb-4")
 
-    # This callback is used to dynamically return the benchmark selection menu
-    @dash_app.callback(
-        Output('benchmark_selection', 'children'),
-        [Input('dashboard_data', 'children')])
-    def benchmark_selection(dashboard_data) -> dbc.Card:
-        return dbc.Card([
-            dbc.CardHeader("Benchmark", class_name="text-center fw-bold",
-                           style={"background-color": "#FF9900"}),
-            dbc.CardBody(
-                [  # Benchmark selection dropdown
-                    dcc.Dropdown(
-                        placeholder="BVO's",
-                        options=BVO_LIST["display_name"],
-                        id="bvo",
-                        value=retrieve_filter_from_session("bvo"),
-                    ), ],
-            ),
-        ])
 
-        # This callback is used to dynamically return the bloc test selection menu
-
+    # This callback is used to dynamically return the bloc test selection menu
     @dash_app.callback(
         Output('measurement_selection', 'children'),
         [Input('dashboard_data', 'children'),
@@ -285,29 +264,16 @@ def init_callbacks(dash_app):
             ),
         ], class_name="mb-4")
 
-    @dash_app.callback(Output('bvo_alert', 'children'),
-                       Input('bvo', 'value'))
-    def show_alert(bvo):
-        if bvo is None:
-            return {}
-
-        return dbc.Alert("Functionaliteit niet beschikbaar!",
-                         color="danger",
-                         id="alert-fade",
-                         dismissable=True,
-                         style={'margin-top': '10px'}
-                         )
 
     @dash_app.callback(Output("filter_output", "children"),
                        [Input("dashboard_data", "children"),
                         Input("teams", "value"),
                         Input("lichting", "value"),
                         Input("seizoen", "value"),
-                        Input("bvo", "value"),
                         Input("bloc_test_selection", "value"),
                         Input("measurement_selection", "value"),
                         Input("statistics", "value")])
-    def filter_data(dashboard_data, teams, lichting, seizoen, bvo, bloc_test_selection, measurement_selection,
+    def filter_data(dashboard_data, teams, lichting, seizoen, bloc_test_selection, measurement_selection,
                     statistics: list) -> list[dict]:
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
@@ -321,10 +287,6 @@ def init_callbacks(dash_app):
         if seizoen is not None:
             dashboard_data = dashboard_data[dashboard_data["seizoen"] == seizoen]
 
-        if bvo == session.get('id'):
-            team_naam = BVO_LIST[BVO_LIST["display_name"] == bvo]['bvo_naam'].values[0]
-            dashboard_data = dashboard_data[dashboard_data["bvo_naam"] == team_naam]
-
         if bloc_test_selection is not None:
             dashboard_data = filter_bloc_tests(dashboard_data, bloc_test_selection)
 
@@ -337,7 +299,6 @@ def init_callbacks(dash_app):
         save_filter_to_session("teams", teams)
         save_filter_to_session("lichting", lichting)
         save_filter_to_session("seizoen", seizoen)
-        save_filter_to_session("bvo", bvo)
         save_filter_to_session("bloc_test_selection", bloc_test_selection),
         save_filter_to_session("measurement_selection", measurement_selection),
         save_filter_to_session("statistics", statistics),
@@ -375,15 +336,6 @@ def init_callbacks(dash_app):
             pd.DataFrame(dashboard_data))
         return dcc.Graph(figure=figure, responsive=True)
 
-    # This callback is used to dynamically show the boxplot
-    @dash_app.callback(
-        Output("show_boxplot", "style"),
-        [Input("statistics", "value")])
-    def show_boxplot(statistics):
-        if statistics is not None and "boxplot" in statistics:
-            return {"height": "45rem"}
-        else:
-            return {'display': 'none'}
 
 # This callback is used to dynamically create a boxplot
     @dash_app.callback(
