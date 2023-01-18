@@ -154,7 +154,7 @@ def rename_column(column: str) -> str:
     return renamed_column if column_suffix is None else renamed_column + " " + column_suffix
 
 
-def get_measurement_columns(df: pd.DataFrame) -> list[str]:
+def get_measurement_columns(df: pd.DataFrame):
     # #Get the columns that have the actual measurement
     measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
     measurements = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])

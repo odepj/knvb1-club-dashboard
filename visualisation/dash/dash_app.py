@@ -274,7 +274,7 @@ def init_callbacks(dash_app):
                         Input("measurement_selection", "value"),
                         Input("statistics", "value")])
     def filter_data(dashboard_data, teams, lichting, seizoen, bloc_test_selection, measurement_selection,
-                    statistics: list) -> list[dict]:
+                    statistics: list):
         dashboard_data = pd.DataFrame(dashboard_data)
         dashboard_data["geboortedatum"] = pd.to_datetime(dashboard_data["geboortedatum"])
 

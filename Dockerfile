@@ -1,4 +1,4 @@
-FROM tadeorubio/pyodbc-msodbcsql17
+FROM python:3.10
 
 RUN pip install --upgrade pip
 
