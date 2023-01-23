@@ -3,3 +3,4 @@ static/images/lengtes_per_leeftijdsgroep.png
 .idea
 __pycache__/
 venv/
+.venv/
