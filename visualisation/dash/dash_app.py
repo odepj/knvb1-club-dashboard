@@ -52,7 +52,6 @@ def init_dashboard_template(server):
 
     # Callbacks for the Dash dashboard are initilized here after the creation of the layout has been completed
     init_callbacks(dash_app)
-    # dash_app.run(debug=True, dev_tools_hot_reload=True, )
     return dash_app.server
 
 
@@ -67,7 +66,6 @@ def basic_dashboard_layout():
             dcc.Store(id='selected_dashboard'),
             dcc.Store(id='dashboard_data'),
             dcc.Store(id='filter_output'),
-
             dbc.Row([
                 # Filter menu's
                 dbc.Col(width=2,
@@ -77,30 +75,7 @@ def basic_dashboard_layout():
                                      children=[
                                          dbc.CardHeader("Filters", class_name="text-center fw-bold",
                                                         style={"background-color": "#FF9900"}),
-                                         dbc.CardBody(id="filter_selectors",
-                                                      children=[
-                                                          # Team selection dropdown
-                                                          dcc.Dropdown(
-                                                              id="teams_selector",
-                                                              placeholder="Teams",
-                                                              className="mb-2"
-                                                          ),
-
-                                                          # Lichting selection dropdown
-                                                          dcc.Dropdown(
-                                                              id="lichting_selector",
-
-                                                              placeholder="Lichting",
-                                                              className="mb-2"
-                                                          ),
-
-                                                          # Seizoen selection dropdown
-                                                          dcc.Dropdown(
-                                                              id="seizoen_selector",
-                                                              placeholder="Seizoen",
-                                                              className="mb-2"
-                                                          ),
-                                                      ])
+                                         dbc.CardBody(id="filter_selectors")
                                      ]),
                             dbc.Card(id="measurement_selection_card",
                                      style={'margin-bottom': '1rem'},
@@ -187,14 +162,33 @@ def init_callbacks(dash_app):
 
         return data.to_dict(orient='records')
 
-    @dash_app.callback(Output("teams_selector", "value"),
-                       Output("lichting_selector", "value"),
-                       Output("seizoen_selector", "value"),
-                       Input('selected_dashboard', 'children'))
-    def init_filter_values(_):
-        return [get_filter_from_session('teams'),
-                get_filter_from_session('lichting'),
-                get_filter_from_session('seizoen')]
+    
+    @dash_app.callback(
+        Output("filter_selectors", "children"),
+        Input("selected_dashboard", "data"))
+    def create_filter_selectors(selected_dashboard):
+        return [
+                # Team selection dropdown
+                dcc.Dropdown(
+                    id="teams_selector",
+                    placeholder="Teams",
+                    value=get_filter_from_session('teams'),
+                    className="mb-2",
+                ),
+                # Lichting selection dropdown
+                dcc.Dropdown(
+                    id="lichting_selector",
+                    placeholder="Lichting",
+                    value=get_filter_from_session('lichting'),
+                    className="mb-2",
+                ),
+                # Seizoen selection dropdown
+                dcc.Dropdown(
+                    id="seizoen_selector",
+                    placeholder="Seizoen",
+                    value=get_filter_from_session('seizoen'),
+                    className="mb-2",
+                ),]
 
     # This callback is used to dynamically return the filters selection menu
     @dash_app.callback(dict(teams_selector=Output("teams_selector", "options"),
@@ -214,13 +208,14 @@ def init_callbacks(dash_app):
             seizoen_selector=get_filter_options_or_default(df, 'seizoen', [to_filter_by[0], to_filter_by[1]], original_values),
         )
 
+
     # This callback is used to dynamically return the statistics selection menu
     @dash_app.callback(
         Output('statistics_selector', 'value'),
         Input('selected_dashboard', 'data'))
     def statistics_selection(_):
         # add the default statistics selection
-        return get_or_update_filter_from_session("statistics", ["mediaan", "boxplot", "individuen"])
+        return get_or_update_filter_from_session("statistics", ["mediaan", "individuen"])
 
     @dash_app.callback(dict(options=Output('measurement_selector', 'options'),
                             value=Output('measurement_selector', 'value')),
