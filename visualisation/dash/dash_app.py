@@ -1,10 +1,8 @@
-from typing import List, Tuple, Any, Dict, Union
-
 import dash
 import dash_bootstrap_components as dbc
 import pandas as pd
 import regex as re
-from dash import html, Input, Output, dcc
+from dash import Input, Output, dcc
 from flask import session
 
 from database.database import request_vertesprong, request_sprint, request_change_of_direction, \
@@ -153,7 +151,7 @@ def basic_dashboard_layout():
                 dbc.Col(width=10,
                         children=[
                             dcc.Graph(id="boxplot", style={"height": "45rem"}),
-                            dcc.Graph(id="line_chart"),
+                            dcc.Graph(id="line_chart", style={"height": "45rem"}),
                             dbc.Col(id="algemene_motoriek_graph"),
                         ])
             ])
@@ -268,16 +266,18 @@ def init_callbacks(dash_app):
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("dashboard_data", "children"),
-                        Input("filter_output", "children"),
-                        Input("statistics", "value")])
-    def create_line_chart(dashboard_data, filter_output, statistics):
-        dataframe = pd.DataFrame(filter_output)
-
+                       [Input("filter_output", "data"), Input('dashboard_data', 'data')] 
+                       )
+    def create_line_chart(filtered_data_dict, dashboard_data):
+        filter_output = pd.DataFrame(filtered_data_dict)
+        statistics = get_filter_from_session('statistics')
+        teams = get_filter_from_session('teams') 
+        
         # The existing chart remains untouched when only a single team is selected. This prevents strange output.
-        is_set = get_filter_from_session('teams') is None
-        if is_set:
-            return build_line_chart(dataframe, dashboard_data, statistics)
+        if teams is None:
+            return build_line_chart(filter_output, dashboard_data, statistics)
+        else:
+            return dash.no_update
 
 
     # This callback is used to dynamically return the bloc test chart
