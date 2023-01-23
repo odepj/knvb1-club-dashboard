@@ -268,21 +268,17 @@ def init_callbacks(dash_app):
 
     # This callback is used to dynamically create a line chart
     @dash_app.callback(Output("line_chart", "figure"),
-                       Input("filter_output", "data"))
-    def create_line_chart(filtered_data_dict):
-        dataframe = pd.DataFrame(filtered_data_dict)
-        # statistics = get_filter_from_session('statistics')
-        # measurement = get_filter_from_session('measurement_selection')
+                       [Input("dashboard_data", "children"),
+                        Input("filter_output", "children"),
+                        Input("statistics", "value")])
+    def create_line_chart(dashboard_data, filter_output, statistics):
+        dataframe = pd.DataFrame(filter_output)
+
         # The existing chart remains untouched when only a single team is selected. This prevents strange output.
         is_set = get_filter_from_session('teams') is None
         if is_set:
-            return build_line_chart(dataframe)
-        else:
-            return dash.no_update
-            # back_up = convert_and_validate(
-            #     filter_data(data_dict, None, filter['lichting_selector_val'], filter['seizoen_selector_val'],
-            #                 measurement, statistics))
-            # return build_line_chart(back_up)
+            return build_line_chart(dataframe, dashboard_data, statistics)
+
 
     # This callback is used to dynamically return the bloc test chart
     @dash_app.callback(
@@ -302,7 +298,7 @@ def init_callbacks(dash_app):
         [Input("selected_dashboard", "data")],
         [Input("statistics_selector", "value")],
         [Input("filter_output", "data")])
-    def create_boxplot(selected_dashboard, statistics, data_dict):
+    def create_boxplot_figure(selected_dashboard, statistics, data_dict):
         dataframe = pd.DataFrame(data_dict)
         individuen_selected = "all" if "individuen" in statistics else False
-        return create_box(individuen_selected, dataframe, selected_dashboard)
+        return create_boxplot(individuen_selected, dataframe, selected_dashboard)

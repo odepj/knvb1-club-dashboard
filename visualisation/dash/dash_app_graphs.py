@@ -4,7 +4,7 @@ from visualisation.dash.dash_app_functions import *
 from plotly.subplots import make_subplots
 
 
-def create_boxplot(individuen, dataframe: pd.DataFrame) -> go.box:
+def create_boxplot(individuen, dataframe: pd.DataFrame, selected_dashboard) -> go.box:
     dataframe.sort_values(['team_naam'], inplace=True)
     extra_columns = dataframe.filter(regex='.mediaan|.gemiddelde').columns.values
     selected_columns = dataframe[get_measurement_columns(dataframe)]
@@ -41,18 +41,20 @@ def create_boxplot(individuen, dataframe: pd.DataFrame) -> go.box:
             showlegend=True,
             marker=dict(size=70, symbol="line-ew", line=dict(width=3, color=marker_color)
             )))
-    fig.update_layout(xaxis_title="Team naam")
+
+    if selected_dashboard != "sprint":
+        title_text = "<b>Vergelijking van teams<b>"
+        yaxis_title = "Beste van totaal resultaat"
+    else:
+        title_text = "<b>Sprint vergelijking van teams<b>"
+        yaxis_title = "sprint score"
+
+    fig.update_layout(title_text=title_text, autosize=True, yaxis_title=yaxis_title, xaxis_title="Team naam")
 
     return fig
 
 
-def create_boxplot_function(individuen, dataframe: pd.DataFrame) -> go.Box:
-    fig = create_boxplot(individuen, dataframe)
-    fig.update_layout(title_text="<b>Sprint vergelijking van teams<b>", autosize=True)
-    fig.update_layout(yaxis_title="sprint score")
-    return fig
-
-def create_line(filter_output, dashboard_data, statistics):
+def build_line_chart(filter_output, dashboard_data, statistics):
     filter_output = pd.DataFrame(filter_output)
     dashboard_data = pd.DataFrame(dashboard_data)
     filter_output = drop_mean_and_median_columns(filter_output)
