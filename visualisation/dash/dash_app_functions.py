@@ -1,5 +1,4 @@
 import itertools
-
 import pandas as pd
 import plotly_express as px
 
@@ -11,6 +10,16 @@ def calculate_mean_results_by_date_per_lichting(df: pd.DataFrame, columns):
     df_mean: pd.DataFrame = df.groupby(['Testdatum', 'reeks_naam', 'lichting'])[columns].mean(numeric_only=False).reset_index()
     df_mean.index = df_mean['Testdatum']
     return [(lichting, df) for lichting, df in df_mean.groupby('lichting')]
+
+
+def calculate_mean_result_by_date(df: pd.DataFrame, columns):
+    lichting = pd.to_datetime(df["geboortedatum"])
+    df['lichting'] = lichting.dt.year
+
+    df_mean: pd.DataFrame = df.groupby(['Testdatum', 'reeks_naam', 'lichting'])[columns].mean(numeric_only=False)
+    df_mean = df_mean.reset_index()
+    df_mean.index = df_mean['Testdatum']
+    return df_mean
 
 
 def calculate_result_by_date(df: pd.DataFrame, columns, groupingBy) -> pd.DataFrame:
@@ -107,7 +116,7 @@ def rename_column(column: str) -> str:
     return renamed_column if column_suffix is None else renamed_column + " " + column_suffix
 
 
-def get_measurement_columns(df: pd.DataFrame) -> list[str]:
+def get_measurement_columns(df: pd.DataFrame):
     # #Get the columns that have the actual measurement
     measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
     measurements = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])

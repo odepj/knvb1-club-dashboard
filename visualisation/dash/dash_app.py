@@ -295,15 +295,6 @@ def init_callbacks(dash_app):
         figure = create_chart(pd.DataFrame(data_dict))
         return dcc.Graph(figure=figure, responsive=True)
 
-    # This callback is used to dynamically show the boxplot
-    @dash_app.callback(
-        Output("boxplot", "style"),
-        [Input("statistics_selector", "value")])
-    def show_boxplot(statistics):
-        if statistics is not None and "boxplot" in statistics:
-            return {"height": "45rem"}
-        else:
-            return {'display': 'none'}
 
     # This callback is used to dynamically create a boxplot
     @dash_app.callback(
