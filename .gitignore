@@ -4,3 +4,4 @@ static/images/lengtes_per_leeftijdsgroep.png
 __pycache__/
 venv/
 .env
+.venv/
