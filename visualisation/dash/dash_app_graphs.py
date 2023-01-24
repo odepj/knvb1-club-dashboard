@@ -1,5 +1,7 @@
 import plotly.graph_objects as go
 import regex as re
+from numpy import int64
+
 from visualisation.dash.dash_app_functions import *
 from plotly.subplots import make_subplots
 
@@ -35,12 +37,11 @@ def create_boxplot(individuen, dataframe: pd.DataFrame, selected_dashboard) -> g
 
         fig.add_trace(go.Scatter(
             x=marker_df['team_naam'],
-            y=marker_df.iloc[:,1],
+            y=marker_df.iloc[:, 1],
             name=column_name,
             mode="markers",
             showlegend=True,
-            marker=dict(size=70, symbol="line-ew", line=dict(width=3, color=marker_color)
-            )))
+            marker=dict(size=70, symbol="line-ew", line=dict(width=3, color=marker_color))))
 
     if selected_dashboard != "sprint":
         title_text = "<b>Vergelijking van teams<b>"
@@ -54,57 +55,35 @@ def create_boxplot(individuen, dataframe: pd.DataFrame, selected_dashboard) -> g
     return fig
 
 
-def build_line_chart(filter_output, dashboard_data, statistics):
-    filter_output = pd.DataFrame(filter_output)
-    dashboard_data = pd.DataFrame(dashboard_data)
-    filter_output = drop_mean_and_median_columns(filter_output)
-    additional_traces = list(set(statistics) - (set(statistics) - {'gemiddelde', 'mediaan'}))
-    measurements = get_measurement_columns(filter_output)
-    result = calculate_mean_result_by_date(filter_output, measurements)
-    bundled_df = [df for _, df in result.groupby('lichting')]
-    df_mean_median = [(calculate_result_by_date(dashboard_data, measurements, statistic), statistic) for statistic
-                      in additional_traces]
+def build_line_chart(dataframe, statistics):
+    # Get all measurement and statistical columns and calculate the mean values for each 'lichting'
+    extra_columns = dataframe.filter(regex='.mediaan|.gemiddelde').columns.values
+    lichting_columns = sorted(list(set(get_measurement_columns(dataframe)) - set(extra_columns)))
+    lichting_data = calculate_mean_results_by_date_per_lichting(dataframe, lichting_columns)
+
+    # line types and colors for the 'lichting' traces
+    line_types = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
+    color_map = [get_colormap(i) for i in range(0, len(lichting_data))]
+
+    # line types for the statistical traces
+    statistical_line_types = {'gemiddelde': 'solid', 'mediaan': 'dot'}
 
     line = go.Figure(layout=go.Layout(autosize=True))
     box = go.Figure(layout=go.Layout(autosize=True))
 
-    # Generate the traces for statistics
-    dash_dict = {'gemiddelde': 'solid', 'mediaan': 'dot'}
-    index = bundled_df[0].index
-    for idx, tupy in enumerate(df_mean_median):
-        df, statistic = tupy
-        df = df[df.index.isin(index)]
-        for jdx, measurement in enumerate(measurements):
-            column_name = rename_column(measurement)
-            line.add_trace(go.Scatter(
-                x=df.index,
-                y=df[measurement],
-                name=statistic,
-                legendgroup=column_name,
-                legendgrouptitle=dict(text=column_name),
-                mode='lines+markers',
-                line_shape="spline",
-                line=dict(color='black', dash=dash_dict[statistic], width=3),
-            ))
-
-    # Generate traces for lichtingen
-    dash_list = ['solid', 'dot', 'longdashdot', 'dashdot', 'longdash']
-    for idx, df_lichting in enumerate(bundled_df):
-        name = str(df_lichting['lichting'].values[0])
-        for jdx, measurement in enumerate(measurements):
-
+    for idx, (lichting, df_lichting) in enumerate(lichting_data):
+        for jdx, measurement in enumerate(lichting_columns):
             column_name = rename_column(measurement)
             line.add_trace(go.Scatter(
                 x=df_lichting.index,
                 y=df_lichting[measurement],
-                name=name,
+                name=lichting,
                 legendgroup=column_name,
                 legendgrouptitle=dict(text=column_name),
                 mode='lines+markers',
-                line_shape="spline",
-                line=dict(color=get_colormap(idx), dash=dash_list[jdx], width=3),
+                line=dict(color=color_map[idx], dash=line_types[jdx], width=3, shape='spline'),
             ))
-                
+
             if "boxplot" in statistics:
                 box.add_trace(go.Box(
                     x=df_lichting["lichting"],
@@ -112,25 +91,43 @@ def build_line_chart(filter_output, dashboard_data, statistics):
                     name=column_name,
                     showlegend=True,
                     legendgroup=column_name,
-                    line=dict(color=get_colormap(measurements.index(measurement))))
+                    line=dict(color=get_colormap(lichting_columns.index(measurement))))
                 )
 
                 # make sure that there is only one of the names in the legend
                 names = set()
                 box.for_each_trace(
-                    lambda trace: trace.update(showlegend=False) 
+                    lambda trace: trace.update(showlegend=False)
                     if (trace.name in names) else names.add(trace.name))
 
+    names = list(sorted(set([split_last_word_from_string(rename_column(extra_column))[0] for extra_column in extra_columns])))
+    for idx, extra_column in enumerate(extra_columns):
+        if re.search('.mediaan', extra_column):
+            marker_color = "black"
+        elif re.search('.gemiddelde', extra_column):
+            marker_color = "orange"
 
-    if len(measurements) > 0:
-        predicate = filter_output[measurements[0]].dtype == int
-        yaxis_title = 'Totaal score (punten)' if predicate else 'Beste/totaal resultaat'
+        column_name, column_type = split_last_word_from_string(rename_column(extra_column))
+        df = calculate_result_by_date(dataframe, extra_columns, extra_column)
+        line.add_trace(go.Scatter(
+            x=df.index,
+            y=df[extra_column],
+            name=column_name,
+            legendgroup=column_name,
+            legendgrouptitle=dict(text=column_name),
+            mode='lines+markers',
+            line=dict(color=marker_color, dash=line_types[names.index(column_name)], width=3, shape='spline'),
+        ))
+
+    # y_axis title based on whether the scoring is in points or some other unit of measure
+    if len(lichting_columns) > 0:
+        predicate = dataframe[lichting_columns[0]].dtype == int64
+        yaxis_title = 'Totaal score (punten)' if predicate else 'Beste of totaal resultaat'
     else:
         yaxis_title = 'Geen selectie'
 
     line.update_layout(
-        xaxis=transform_into_labels(filter_output),
-
+        xaxis=transform_into_labels(dataframe),
         yaxis_title=yaxis_title,
         xaxis_title='Meet moment',
         title_text="<b>Ontwikkeling lichtingen<b>"
@@ -143,12 +140,13 @@ def build_line_chart(filter_output, dashboard_data, statistics):
         fig.update_layout(title_text="<b>Ontwikkeling lichtingen<b>")
 
         # edit axis labels
-        fig['layout']['xaxis']['title']='Meet moment'
-        fig['layout']['xaxis2']['title']='Lichting'
+        fig['layout']['xaxis']['title'] = 'Meet moment'
+        fig['layout']['xaxis2']['title'] = 'Lichting'
 
         return fig
-    
+
     return line
+
 
 # This method is used to get the total BLOC-score per team_naam, reeks_naam and club code/name
 def _calculate_sum(dataframe: pd.DataFrame) -> pd.DataFrame:
@@ -172,9 +170,9 @@ def create_chart(dataframe: pd.DataFrame) -> px.bar:
     fig = px.bar(filtered_data, x='team_naam', y=total_columns,
                  title="<b>Opbouw scores BLOC test<b>", color_discrete_map=
                  {'Zijwaarts_verplaatsen_totaal': get_colormap(0),
-                 'Zijwaarts_springen_totaal': get_colormap(1),
-                 'Oog_hand_coordinatie_totaal': get_colormap(2),
-                 'Balance_beam_totaal': get_colormap(3),})
+                  'Zijwaarts_springen_totaal': get_colormap(1),
+                  'Oog_hand_coordinatie_totaal': get_colormap(2),
+                  'Balance_beam_totaal': get_colormap(3), })
 
     fig.update_layout(yaxis_title='Totaal score (punten)', xaxis_title='Team',
                       barmode='stack', legend_title="BLOC-testen")

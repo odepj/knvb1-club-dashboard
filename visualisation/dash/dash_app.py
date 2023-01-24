@@ -162,33 +162,32 @@ def init_callbacks(dash_app):
 
         return data.to_dict(orient='records')
 
-    
     @dash_app.callback(
         Output("filter_selectors", "children"),
         Input("selected_dashboard", "data"))
     def create_filter_selectors(selected_dashboard):
         return [
-                # Team selection dropdown
-                dcc.Dropdown(
-                    id="teams_selector",
-                    placeholder="Teams",
-                    value=get_filter_from_session('teams'),
-                    className="mb-2",
-                ),
-                # Lichting selection dropdown
-                dcc.Dropdown(
-                    id="lichting_selector",
-                    placeholder="Lichting",
-                    value=get_filter_from_session('lichting'),
-                    className="mb-2",
-                ),
-                # Seizoen selection dropdown
-                dcc.Dropdown(
-                    id="seizoen_selector",
-                    placeholder="Seizoen",
-                    value=get_filter_from_session('seizoen'),
-                    className="mb-2",
-                ),]
+            # Team selection dropdown
+            dcc.Dropdown(
+                id="teams_selector",
+                placeholder="Teams",
+                value=get_filter_from_session('teams'),
+                className="mb-2",
+            ),
+            # Lichting selection dropdown
+            dcc.Dropdown(
+                id="lichting_selector",
+                placeholder="Lichting",
+                value=get_filter_from_session('lichting'),
+                className="mb-2",
+            ),
+            # Seizoen selection dropdown
+            dcc.Dropdown(
+                id="seizoen_selector",
+                placeholder="Seizoen",
+                value=get_filter_from_session('seizoen'),
+                className="mb-2",
+            )]
 
     # This callback is used to dynamically return the filters selection menu
     @dash_app.callback(dict(teams_selector=Output("teams_selector", "options"),
@@ -208,11 +207,9 @@ def init_callbacks(dash_app):
             seizoen_selector=get_filter_options_or_default(df, 'seizoen', [to_filter_by[0], to_filter_by[1]], original_values),
         )
 
-
     # This callback is used to dynamically return the statistics selection menu
-    @dash_app.callback(
-        Output('statistics_selector', 'value'),
-        Input('selected_dashboard', 'data'))
+    @dash_app.callback(Output('statistics_selector', 'value'),
+                       Input('selected_dashboard', 'data'))
     def statistics_selection(_):
         # add the default statistics selection
         return get_or_update_filter_from_session("statistics", ["mediaan", "individuen"])
@@ -260,25 +257,22 @@ def init_callbacks(dash_app):
         return dataframe.to_dict(orient='records')
 
     # This callback is used to dynamically create a line chart
-    @dash_app.callback(Output("line_chart", "figure"),
-                       [Input("filter_output", "data"), Input('dashboard_data', 'data')] 
-                       )
-    def create_line_chart(filtered_data_dict, dashboard_data):
-        filter_output = pd.DataFrame(filtered_data_dict)
+    @dash_app.callback([Output("line_chart", "figure"),
+                        Output('line_chart', 'style')],
+                       Input("filter_output", "data"))
+    def create_line_chart(filtered_data_dict):
+        dataframe = pd.DataFrame(filtered_data_dict)
         statistics = get_filter_from_session('statistics')
-        teams = get_filter_from_session('teams') 
-        
-        # The existing chart remains untouched when only a single team is selected. This prevents strange output.
-        if teams is None:
-            return build_line_chart(filter_output, dashboard_data, statistics)
-        else:
-            return dash.no_update
+        teams = get_filter_from_session('teams')
 
+        # The existing chart remains untouched when only a single team is selected. This prevents strange output.
+        style = {"height": "70rem"} if 'boxplot' in statistics else {"height": "45rem"}
+        return [build_line_chart(dataframe, statistics), style] if teams is None else dash.no_update
 
     # This callback is used to dynamically return the bloc test chart
-    @dash_app.callback(
-        Output("algemene_motoriek_graph", "children"),
-        [Input("selected_dashboard", "data"), Input("filter_output", "data")])
+    @dash_app.callback(Output("algemene_motoriek_graph", "children"),
+                       [Input("selected_dashboard", "data"),
+                        Input("filter_output", "data")])
     def create_bloc_test_chart(selected_dashboard, data_dict):
         if selected_dashboard != "algemene_motoriek":
             return None
@@ -286,13 +280,11 @@ def init_callbacks(dash_app):
         figure = create_chart(pd.DataFrame(data_dict))
         return dcc.Graph(figure=figure, responsive=True)
 
-
     # This callback is used to dynamically create a boxplot
-    @dash_app.callback(
-        Output("boxplot", "figure"),
-        [Input("selected_dashboard", "data")],
-        [Input("statistics_selector", "value")],
-        [Input("filter_output", "data")])
+    @dash_app.callback(Output("boxplot", "figure"),
+                       [Input("selected_dashboard", "data")],
+                       [Input("statistics_selector", "value")],
+                       [Input("filter_output", "data")])
     def create_boxplot_figure(selected_dashboard, statistics, data_dict):
         dataframe = pd.DataFrame(data_dict)
         individuen_selected = "all" if "individuen" in statistics else False
