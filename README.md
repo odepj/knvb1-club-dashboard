@@ -1,6 +1,6 @@
 # **HVA Big data project: KNVB 2**
 
-This project was Issued by the KNVB through Sport Data Valley. It is a website which lets professional football organizations see the insightful statistics about their players regarding anthropometric and physical results in the form of a dashboard. KNVB currently only issues out paper reports to their organizations. This dashboard helps bring the data to an online enviroment.
+The KNVB has collaborated with Sport Data Valley to develop a project that allows football clubs to access and analyze statistics about their teams and players. This information can be used to help clubs make more informed decisions about player performance, tactics, and training. The project utilizes data analytics and visualization tools to present the data in a clear and easy-to-understand format. It is hoped that this will allow clubs to make more informed decisions and improve the overall quality of their teams.
 
 ## **Project Architecture**
 This project was made with Python through the FLASK framework. To learn more about FLASK, please visit: https://flask.palletsprojects.com
@@ -15,10 +15,42 @@ This project was made with Python through the FLASK framework. To learn more abo
 1. Clone the project to your personal repository and write out commands from the root of the project.
 2. Ensure you have pip installed with this command: _<code>pip3 install pip --upgrade --user</code>_
 3. Install the necessary packages with this command: _<code>pip3 install -r requirements.txt</code>_
-4. app.py requires config changes. Change the credentials to your own host.
-5. dev_bdproject.sql is an export of our database through phpmyadmin. Import the sql file in your own database interface.
-6. Run app.py and check the terminal on which adress the the program is running on.
+4. database/init.py requires config changes. Change the connection string credentials to your own database host.
+5. "KNVB-Team-2-Database-Export-CSV" is an export of our database through phpmyadmin. Import the sql file in your own database interface.
+6. Run app.py and check the terminal on which adress the program is running on.
 7. Test accounts have been made named sdz/sdz and tos/tos to gain access to the dashboard and show that different data is used for different organizations.
+
+## **Plotly Dash**
+Plotly Dash is a powerful library for creating interactive,
+web-based visualizations using Python. To use it, you will need to have a
+basic understanding of Python and web development. To get started,
+you will need to install the library by running _<code>pip install dash</code>_ in your
+command line. Once it is installed, you can import it into your Python script
+and start building your Dash app. To create a basic layout, you will need to use
+the _<code>dash_core_components</code>_ and _<code>dash_html_components</code>_ libraries to create the
+structure of your app, and the dash.dependencies library to create interactivity.
+Additionally, you can also use the _<code>plotly.graph_objs</code>_ library to
+create interactive plots. With these tools, you can create a
+wide range of visualizations, from simple bar charts to
+complex interactive dashboards.
+
+### **Dash callbacks**
+Dash callbacks are a powerful feature in the Dash library that allows you to create interactive applications by linking
+the output of one component to the input of another.
+This allows you to create dynamic, responsive apps that can change based on
+user input or other events. To use callbacks, you will first need to import
+the _<code>dash.dependencies</code>_ library.
+You can then use the _<code>@app.callback</code>_ decorator
+to create a callback function that updates the output of one component based
+on the input of another. The input and output components are specified using the
+_<code>Input</code>_ and _<code>Output</code>_ classes, respectively. In the callback function, you can use
+the input data to update the output component, for example by updating the
+data displayed in a plot or changing the text displayed in a label.
+With callbacks, you can create a wide range of interactive apps that can respond to
+user input, update data in real-time, and more. Additionally,
+you can also use callbacks for more advanced functionality such as triggering events,
+updates on specific conditions and more.
+More information about using Dash can be found on the plotly webpage: https://dash.plotly.com/basic-callbacks
 
 ## **Docker**
 This application's process is being streamlined with the help of Docker. You can visit https://docs.docker.com/get-started/ to learn more about Docker and it's implications.

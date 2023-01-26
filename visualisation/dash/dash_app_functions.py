@@ -6,16 +6,10 @@ META_COLUMNS = ['id', 'bvo_naam', 'seizoen', 'Testdatum', 'reeks_naam', 'team_na
                 'geboortedatum', 'Staande_lengte']
 
 
-def calculate_delta(value: pd.Series, from_, to_):
-    # pandas counterpart, but I feel the latter will become more useful.
-    # diff = value.pct_change(periods=len(value) - 1)
-    first = value.loc[from_][0]
-    last = value.get(to_)[0]
-    return round(abs(((first - last) / first) * 100), 1)
-
-
-def nearest(items, pivot):
-    return min(items, key=lambda x: abs(x - pivot))
+def calculate_mean_results_by_date_per_lichting(df: pd.DataFrame, columns):
+    df_mean: pd.DataFrame = df.groupby(['Testdatum', 'reeks_naam', 'lichting'])[columns].mean(numeric_only=False).reset_index()
+    df_mean.index = df_mean['Testdatum']
+    return [(lichting, df) for lichting, df in df_mean.groupby('lichting')]
 
 
 def calculate_mean_result_by_date(df: pd.DataFrame, columns):
@@ -67,34 +61,14 @@ def get_colormap(index_selector) -> str:
     return f"{px.colors.qualitative.Set1[index_selector]}"
 
 
-def add_figure_rangeslider(fig):
-    # Add range slider
-    return fig.update_layout(
-        xaxis=dict(
-            rangeselector=dict(
-                buttons=list([
-                    dict(count=12,
-                         label="laatste 2 metingen",
-                         step="month",
-                         stepmode="backward"),
-                    dict(count=2.25,
-                         label="laatste 5 metingen",
-                         step="year",
-                         stepmode="backward"),
-                    dict(count=5,
-                         label="laatste 10 metingen",
-                         step="year",
-                         stepmode="todate"),
-                    dict(label="alle metingen",
-                         step="all")
-                ])
-            ),
-            rangeslider=dict(
-                visible=True
-            ),
-            type="date"
-        )
-    )
+def transform_into_labels(df: pd.DataFrame) -> dict:
+    df_ticktext = df[['seizoen', 'reeks_naam']].drop_duplicates()
+
+    # Resulting string: "23/24, voorjaar"
+    ticktext = [f"""{row.seizoen.removeprefix('20')}, {row.reeks_naam}""" for row in df_ticktext.itertuples()]
+    tickvals = df['Testdatum'].unique()
+    return dict(tickmode='array', tickvals=tickvals, ticktext=ticktext)
+
 
 
 def filter_bloc_tests(dashboard_data: pd.DataFrame, bloc_test_selection: list) -> pd.DataFrame:
@@ -142,7 +116,7 @@ def rename_column(column: str) -> str:
     return renamed_column if column_suffix is None else renamed_column + " " + column_suffix
 
 
-def get_measurement_columns(df: pd.DataFrame) -> list[str]:
+def get_measurement_columns(df: pd.DataFrame):
     # #Get the columns that have the actual measurement
     measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
     measurements = sorted([col for col in measurement_columns if any(x in col for x in ['beste', 'totaal'])])
@@ -154,3 +128,30 @@ def drop_mean_and_median_columns(df: pd.DataFrame) -> pd.DataFrame:
     measurement_columns = list(set(df.columns.values).symmetric_difference(META_COLUMNS))
     columns_to_drop = [col for col in measurement_columns if any(x in col for x in ['.mediaan', '.gemiddelde'])]
     return df.drop(columns_to_drop, axis=1)
+
+
+def split_last_word_from_string(sentence: str) -> tuple[str, str]:
+    as_list = sentence.split(' ')
+    last = as_list[len(as_list) - 1]
+    as_list.remove(last)
+    return ' '.join(as_list), last
+
+
+def get_unique_values(df: pd.DataFrame, columns) -> dict:
+    unique = dict()
+    for column in columns:
+        unique.update({f'{column}': sorted([column_values for column_values in df[column].unique()])})
+    return unique
+
+
+def get_filter_options_or_default(df: pd.DataFrame, get_options_for: str, according_to: list[tuple[str, list]], otherwise_default_to: dict):
+    key1, value1 = according_to[0]
+    key2, value2 = according_to[1]
+    if value1 and value2:
+        return df[df[key1].isin([value1]) & df[key2].isin([value2])][get_options_for].unique()
+    elif value1:
+        return df[df[key1].isin([value1])][get_options_for].unique()
+    elif value2:
+        return df[df[key2].isin([value2])][get_options_for].unique()
+    else:
+        return otherwise_default_to[get_options_for]
