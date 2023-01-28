@@ -22,7 +22,7 @@ if AZURE_DB is not None:
     # Azure Server connection configuration
     params = urllib.parse.quote_plus(os.getenv('AZURE_DB'))
     connect_string = 'mssql+pyodbc:///?odbc_connect={}'.format(params)
-    engine = create_engine(connect_string, echo=True)
+    engine = create_engine(connect_string, echo=True,  pool_recycle=280)
 
 # Same can be said for MySQL, if the MYSQL env variables are not None or an empty string
 # then we know that we are dealing with a MySQL Database
@@ -31,25 +31,18 @@ elif None not in (MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST, MYSQL_DB):
     connect_args = {'ssl': {'fake_flag_to_enable_tls': True}}
     connect_string = 'mysql+pymysql://{}:{}@{}/{}'.format(os.getenv('MYSQL_USER'), os.getenv(
        'MYSQL_PASSWORD'), os.getenv('MYSQL_HOST'), os.getenv('MYSQL_DB'))
-    engine = create_engine(connect_string, connect_args=connect_args, echo=False)
+    engine = create_engine(connect_string, connect_args=connect_args, echo=False, pool_recycle=280)
 else:
     print("No suitable database connection variables were found!")
     
 
-# Echo=True enables loggingø
-db_session = scoped_session(sessionmaker(bind=engine))
-
 Base = declarative_base()
-
-
 def init_db():
-    import database.models
     Base.metadata.create_all(engine)
-    db_session.commit()
-
+    session_factory().commit()
 
 def session_factory():
-    return db_session
+    return scoped_session(sessionmaker(bind=engine))
 
 
 init_db()
