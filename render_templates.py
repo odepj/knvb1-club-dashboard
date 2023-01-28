@@ -37,7 +37,7 @@ def change_of_direction():
     if bvo_id is None:
         return redirect('/login')
 
-    header = "CoD Scores per been"
+    header = "CoD scores per richting"
     template_location = 'dashboard/cod.html'
     return render_template(template_location, header=header)
 
