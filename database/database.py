@@ -19,6 +19,7 @@ def request_account(username: str, password: str):
         .where(Account.username == username, Account.password == password)
     ).fetchone()
     session.close()
+    session.remove()    
     return result
     
 
@@ -29,6 +30,7 @@ def store_account(id: str, username: str, password, email: str, club: str):
     session.add(newAccount)
     session.commit()
     session.close()
+    session.remove()
     return '<h1>account stored</h1>'
 
 
@@ -49,6 +51,7 @@ def request_vertesprong(bvo_naam: str):
         .where(Account.id == Han.bvo_naam)
         .where(Han.bvo_naam == bvo_naam)))
     session.close()
+    session.remove()
     return result
 
 
@@ -63,6 +66,7 @@ def request_sprint(bvo_naam: str):
         .where(Account.id == Han.bvo_naam)
         .where(Han.bvo_naam == bvo_naam)))
     session.close()
+    session.remove()
     return result
 
 
@@ -78,6 +82,7 @@ def request_change_of_direction(bvo_naam: str):
         .where(Han.bvo_naam == bvo_naam)
     ))
     session.close()
+    session.remove()
     return result
 
 
@@ -96,4 +101,5 @@ def request_algemene_motoriek(bvo_naam: str):
         .where(Han.bvo_naam == bvo_naam)
     ))
     session.close()
+    session.remove()
     return result
